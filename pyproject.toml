@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "trading_bot_t2"
+version = "0.1.0"
+description = "AI multi-agent trading bot MVP for backtesting with Bill Williams Trading Chaos indicators."
+authors = ["Your Name <your.email@example.com>"]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<4.0"
+pandas = "*"
+numpy = "*"
+yfinance = "*"
+langgraph = "*"
+openai = "*"
+matplotlib = "*"
+
+[tool.poetry.dev-dependencies]
+pytest = "*"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
