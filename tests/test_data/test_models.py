@@ -1,6 +1,8 @@
-import pytest
-from src.data.models import OHLCV, OHLCVSeries
 from datetime import datetime, timedelta
+
+import pytest
+
+from src.data.models import OHLCV, OHLCVSeries
 
 
 def test_ohlcv_validation():

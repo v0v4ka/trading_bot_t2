@@ -1,5 +1,7 @@
 import pandas as pd
-from src.indicators.awesome_oscillator import awesome_oscillator, ao_zero_crossings
+
+from src.indicators.awesome_oscillator import (ao_zero_crossings,
+                                               awesome_oscillator)
 
 
 def test_ao_and_crossings():

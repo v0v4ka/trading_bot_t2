@@ -3,8 +3,9 @@ Alligator indicator implementation for Bill Williams Trading Chaos system.
 """
 
 from typing import Dict
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 
 
 def smma(series: pd.Series, period: int) -> pd.Series:

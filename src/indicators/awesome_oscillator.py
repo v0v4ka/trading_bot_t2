@@ -3,8 +3,9 @@ Awesome Oscillator (AO) implementation for Bill Williams Trading Chaos system.
 """
 
 from typing import Tuple
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 
 
 def awesome_oscillator(df: pd.DataFrame) -> pd.Series:

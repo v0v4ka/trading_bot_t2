@@ -2,7 +2,8 @@
 Fractals indicator implementation for Bill Williams Trading Chaos system.
 """
 
-from typing import List, Dict
+from typing import Dict, List
+
 import pandas as pd
 
 

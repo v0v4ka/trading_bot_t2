@@ -1,9 +1,11 @@
 import logging
-from typing import List, Dict, Callable, Optional
-import pandas as pd
-from ..indicators.engine import IndicatorsEngine
-import openai
 import os
+from typing import Callable, Dict, List, Optional
+
+import openai
+import pandas as pd
+
+from ..indicators.engine import IndicatorsEngine
 
 logger = logging.getLogger("trading_bot.signal_detection")
 

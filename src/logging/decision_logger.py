@@ -9,12 +9,12 @@ and log analysis utilities.
 import json
 import logging
 import os
+import threading
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Any, Union
-from dataclasses import dataclass, asdict
-import threading
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
 
 class LogLevel(Enum):

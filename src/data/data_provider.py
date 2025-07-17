@@ -1,12 +1,13 @@
-import yfinance as yf
-import pandas as pd
-from typing import List, Optional
-from datetime import datetime
-from .models import OHLCV, OHLCVSeries
 import logging
-import time
-
 import os
+import time
+from datetime import datetime
+from typing import List, Optional
+
+import pandas as pd
+import yfinance as yf
+
+from .models import OHLCV, OHLCVSeries
 
 logger = logging.getLogger("trading_bot.data_provider")
 

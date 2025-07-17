@@ -1,7 +1,9 @@
+import os
+
 import pytest
+
 from src.data.data_provider import DataProvider
 from src.data.models import OHLCVSeries
-import os
 
 
 def test_fetch_valid_symbol(monkeypatch):

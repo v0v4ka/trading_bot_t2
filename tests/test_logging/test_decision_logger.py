@@ -4,24 +4,18 @@ Unit tests for the agent decision logging system.
 
 import json
 import os
+# Import our logging classes
+import sys
 import tempfile
 import unittest
 from datetime import datetime, timedelta
 from pathlib import Path
-from unittest.mock import patch, mock_open
-
-# Import our logging classes
-import sys
+from unittest.mock import mock_open, patch
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from src.logging.decision_logger import (
-    DecisionLogger,
-    DecisionEvent,
-    LogAnalyzer,
-    LogLevel,
-    DecisionType,
-)
+from src.logging.decision_logger import (DecisionEvent, DecisionLogger,
+                                         DecisionType, LogAnalyzer, LogLevel)
 
 
 class TestDecisionEvent(unittest.TestCase):

@@ -1,4 +1,5 @@
 import logging
+
 from src.logging_setup import logger
 
 if __name__ == "__main__":

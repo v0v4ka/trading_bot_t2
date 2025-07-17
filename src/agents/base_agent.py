@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Optional
+
 from openai import OpenAI
 
 from .schemas import AgentMessage

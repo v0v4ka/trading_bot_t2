@@ -1,4 +1,5 @@
 import pandas as pd
+
 from src.indicators.fractals import identify_fractals
 
 

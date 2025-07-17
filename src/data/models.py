@@ -1,7 +1,8 @@
-from typing import List, Optional
 from datetime import datetime
-from pydantic.v1 import BaseModel, validator, root_validator
+from typing import List, Optional
+
 import numpy as np
+from pydantic.v1 import BaseModel, root_validator, validator
 
 
 class OHLCV(BaseModel):
