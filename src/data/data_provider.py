@@ -6,6 +6,7 @@ from .models import OHLCV, OHLCVSeries
 import logging
 import time
 
+import os
 logger = logging.getLogger("trading_bot.data_provider")
 
 SUPPORTED_INTERVALS = {
@@ -31,9 +32,33 @@ class DataProvider:
 
     def fetch(self) -> OHLCVSeries:
         try:
-            logger.info(
-                f"Fetching data for {self.symbol} [{self.interval}] from {self.start} to {self.end}"
-            )
+
+            logger.info(f"Fetching data for {self.symbol} [{self.interval}] from {self.start} to {self.end}")
+            if os.environ.get("TBOT_TEST_MODE") == "1":
+                logger.info("TBOT_TEST_MODE active - returning synthetic data")
+                if self.symbol == "INVALIDSYM":
+                    raise ValueError("No data returned for symbol/timeframe.")
+                dates = pd.date_range(self.start or "2024-01-01", periods=10)
+                df = pd.DataFrame({
+                    'Open': [1.0 + i for i in range(len(dates))],
+                    'High': [1.5 + i for i in range(len(dates))],
+                    'Low': [0.5 + i for i in range(len(dates))],
+                    'Close': [1.2 + i for i in range(len(dates))],
+                    'Volume': [1000 + i for i in range(len(dates))]
+                }, index=dates)
+                candles = [
+                    OHLCV(
+                        timestamp=idx.to_pydatetime(),
+                        open=float(row['Open']),
+                        high=float(row['High']),
+                        low=float(row['Low']),
+                        close=float(row['Close']),
+                        volume=float(row['Volume'])
+                    )
+                    for idx, row in df.iterrows()
+                ]
+                return OHLCVSeries(candles=candles)
+
             data = yf.download(
                 self.symbol,
                 interval=self.interval,

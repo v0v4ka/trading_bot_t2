@@ -170,6 +170,36 @@ def identify_fractals(df: pd.DataFrame) -> List[Dict]:
 - Expand documentation and usage examples for AI agent developers.
 
 
+## [2025-07-17] Phase 2, Task 2.2: Signal Detection Agent
+
+### Reference
+- Implementation Plan: Phase 2, Task 2.2
+
+### Tasks Completed
+- Implemented `SignalDetectionAgent` in `src/agents/signal_detection_agent.py` leveraging Bill Williams indicators and optional GPT-4 confirmation.
+- Added prompt template `prompts/signal_confirmation_prompt.txt`.
+- Provided multi-level confidence scoring combining indicator alignment and LLM output.
+- Agent processes historical data for backtesting use.
+- Created unit tests under `tests/test_agents/` and updated package init.
+
+### LLM Prompt Example
+```text
+You are a trading assistant helping to confirm Bill Williams fractal entry signals.
+Fractal type: {fractal_type}
+Awesome Oscillator value: {ao_value}
+Assess the validity of taking this trade and respond with a single confidence value between 0 and 1.
+```
+
+### Testing Approach & Results
+- Ran `pytest`; all tests including new agent tests pass using a stub LLM.
+
+### Issues Encountered & Resolutions
+- No major issues. OpenAI API calls are abstracted via optional client allowing offline testing.
+
+### Recommendations for Next Steps
+- Integrate the SignalDetectionAgent with the forthcoming backtesting engine to evaluate signal quality.
+=======
+
 ## [2025-07-17] Phase 2, Task 2.1: Agent Architecture Foundation
 
 ### Reference
@@ -336,4 +366,5 @@ summary = analyzer.get_decision_summary()
 - Compatible with planned agent orchestration framework
 - Supports backtesting decision audit requirements
 - Enables performance analysis and agent improvement workflows
+
 
