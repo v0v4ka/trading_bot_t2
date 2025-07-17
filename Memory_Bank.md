@@ -168,3 +168,130 @@ def identify_fractals(df: pd.DataFrame) -> List[Dict]:
 - Integrate indicators engine with agent signal logic in Phase 2.
 - Add more validation datasets and performance benchmarks.
 - Expand documentation and usage examples for AI agent developers.
+
+---
+
+## [2025-07-17] Phase 3, Task 3.2: Agent Decision Logging System
+
+### Reference
+- Implementation Plan: Phase 3, Task 3.2
+- APM Task Assignment: Agent Decision Logging System
+
+### Tasks Completed
+- Implemented structured decision logging system in `src/logging/decision_logger.py` with support for standard and verbose modes
+- Created `DecisionEvent` dataclass for structured agent decision representation with timestamp, confidence, reasoning, and optional LLM data
+- Implemented `DecisionLogger` class with JSON-based persistent logging, file rotation, and thread safety
+- Added `LogAnalyzer` class with filtering, analysis, and export capabilities for decision history review
+- Created comprehensive test suite in `tests/test_logging/test_decision_logger.py` with 19 unit tests covering all functionality
+- Developed demonstration scripts (`demo_decision_logging.py`, `agent_integration_example.py`) showing usage patterns
+- Integrated with existing logging infrastructure while maintaining separation of concerns
+
+### Implementation Design & Architecture
+
+**Core Components:**
+1. **DecisionEvent**: Immutable dataclass representing single agent decision with full context
+2. **DecisionLogger**: Thread-safe logger with configurable verbosity and file rotation
+3. **LogAnalyzer**: Utility for reading, filtering, and analyzing historical decisions
+4. **Decision Types**: Enum defining categories (signal_generation, trade_execution, risk_assessment, etc.)
+5. **Log Levels**: Standard mode (essential data) vs Verbose mode (includes full LLM interactions)
+
+**Key Features:**
+- **Structured Logging**: JSON format for easy parsing and analysis
+- **Dual Logging Modes**: Standard for production, verbose for debugging/audit
+- **Decision History**: Chronological tracking with microsecond timestamp precision
+- **Context Preservation**: Arbitrary context data, LLM prompts/responses, confidence scores
+- **Log Analysis**: Filtering by agent, type, time range, confidence; summary statistics
+- **File Management**: Automatic rotation, configurable size limits, backup retention
+
+### Code Architecture Example
+```python
+# Core logging usage
+logger = DecisionLogger("logs/agent_decisions.log", LogLevel.STANDARD)
+event = logger.log_decision(
+    agent_name="SignalAgent_EURUSD",
+    agent_type="TechnicalAnalysisAgent", 
+    decision_type=DecisionType.SIGNAL_GENERATION,
+    action_taken="Generated BUY signal",
+    confidence_score=0.85,
+    reasoning_summary="Strong bullish indicators",
+    context_data={"symbol": "EURUSD", "price": 1.0895}
+)
+
+# Analysis and filtering
+analyzer = LogAnalyzer("logs/agent_decisions.log")
+high_confidence = analyzer.filter_decisions(min_confidence=0.8)
+summary = analyzer.get_decision_summary()
+```
+
+### Logging Data Structure
+```json
+{
+  "log_level": "standard|verbose",
+  "event": {
+    "agent_name": "string",
+    "agent_type": "string", 
+    "timestamp": "ISO8601",
+    "decision_type": "enum_value",
+    "action_taken": "string",
+    "confidence_score": 0.0-1.0,
+    "reasoning_summary": "string",
+    "full_reasoning": "string|null",
+    "llm_prompt": "string|null", 
+    "llm_response": "string|null",
+    "context_data": "object|null"
+  }
+}
+```
+
+### Testing Approach & Results
+- **Unit Tests**: 19 comprehensive tests covering all classes and methods
+- **Test Coverage**: Event serialization, logging modes, filtering, analysis, error handling
+- **Edge Cases**: Invalid confidence scores, malformed log entries, file permissions, concurrent access
+- **Integration Tests**: Multi-agent logging scenarios, log rotation, export functionality
+- **All tests pass**: 100% test success rate with comprehensive coverage
+
+### Performance Characteristics
+- **Thread Safety**: Concurrent logging from multiple agents supported via threading.Lock
+- **Memory Efficiency**: Streaming JSON writes, no in-memory log accumulation
+- **File Rotation**: Automatic management prevents unbounded disk usage
+- **Query Performance**: File-based sequential reads for analysis (suitable for MVP scale)
+
+### Integration Patterns
+- **BaseAgent Class**: Mixin pattern for easy agent integration
+- **Shared Logger**: Single logger instance across agent orchestration system
+- **Minimal Coupling**: No dependencies on agent architecture, purely logging-focused
+- **Configuration**: Environment-based log level and file path configuration
+
+### Issues Encountered & Resolutions
+- **Import Structure**: Resolved package import conflicts by creating proper `src/logging/` package
+- **Timezone Handling**: Used timezone-naive datetime for simplicity, timestamps in ISO format
+- **File Permissions**: Ensured directory creation with proper error handling
+- **JSON Serialization**: Custom serialization for datetime and enum types
+
+### Example Usage Scenarios
+1. **Signal Generation**: Log trading signals with confidence and market context
+2. **Risk Assessment**: Track risk decisions with calculated metrics and reasoning
+3. **Trade Execution**: Record actual trade execution with slippage and timing data
+4. **LLM Interactions**: Capture full prompt/response chains in verbose mode for audit
+5. **Decision Analysis**: Historical review of agent performance and decision patterns
+
+### Log Analysis Capabilities
+- **Filtering**: By agent, type, time range, confidence level
+- **Statistics**: Mean/min/max confidence, decision type distribution, agent activity
+- **Export**: JSON export with optional summary statistics
+- **Time Series**: Chronological decision tracking for pattern analysis
+- **Performance Review**: Agent confidence trends and decision quality metrics
+
+### Recommendations for Integration
+- **Agent Architecture**: Integrate via BaseAgent mixin or dependency injection
+- **Configuration**: Use environment variables for log file paths and levels
+- **Monitoring**: Set up log rotation monitoring and disk space alerts
+- **Analysis**: Regular decision quality review using LogAnalyzer utilities
+- **Debugging**: Use verbose mode during development and testing phases
+- **Production**: Standard mode for production to minimize disk usage while maintaining audit trail
+
+### Next Steps Integration Points
+- Ready for immediate integration with signal detection agents in Phase 2
+- Compatible with planned agent orchestration framework
+- Supports backtesting decision audit requirements
+- Enables performance analysis and agent improvement workflows
