@@ -1,0 +1,1 @@
+{"log_level": "standard", "event": {"agent_name": "TestAgent", "agent_type": "TestType", "timestamp": "2025-07-17T18:13:04.275387", "decision_type": "other", "action_taken": "Test action", "confidence_score": 0.5, "reasoning_summary": "Test reasoning", "full_reasoning": null, "llm_prompt": null, "llm_response": null, "context_data": null}}
