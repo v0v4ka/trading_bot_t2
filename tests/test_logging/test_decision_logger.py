@@ -4,7 +4,6 @@ Unit tests for the agent decision logging system.
 
 import json
 import os
-
 # Import our logging classes
 import sys
 import tempfile
@@ -15,13 +14,8 @@ from unittest.mock import mock_open, patch
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from src.logging.decision_logger import (
-    DecisionEvent,
-    DecisionLogger,
-    DecisionType,
-    LogAnalyzer,
-    LogLevel,
-)
+from src.logging.decision_logger import (DecisionEvent, DecisionLogger,
+                                         DecisionType, LogAnalyzer, LogLevel)
 
 
 class TestDecisionEvent(unittest.TestCase):
