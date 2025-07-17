@@ -9,7 +9,13 @@ from .schemas import AgentMessage
 class BaseAgent:
     """Base class for GPT-powered agents."""
 
-    def __init__(self, name: str, system_prompt: str, model: str = "gpt-4o", client: Optional[OpenAI] = None):
+    def __init__(
+        self,
+        name: str,
+        system_prompt: str,
+        model: str = "gpt-4o",
+        client: Optional[OpenAI] = None,
+    ):
         self.name = name
         self.system_prompt = system_prompt
         self.model = model

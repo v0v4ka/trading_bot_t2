@@ -7,6 +7,12 @@ This package provides specialized logging functionality including:
 - Integration with the existing logging framework
 """
 
-from .decision_logger import DecisionLogger, DecisionEvent, LogAnalyzer, DecisionType, LogLevel
+from .decision_logger import (
+    DecisionLogger,
+    DecisionEvent,
+    LogAnalyzer,
+    DecisionType,
+    LogLevel,
+)
 
-__all__ = ['DecisionLogger', 'DecisionEvent', 'LogAnalyzer', 'DecisionType', 'LogLevel']
+__all__ = ["DecisionLogger", "DecisionEvent", "LogAnalyzer", "DecisionType", "LogLevel"]
