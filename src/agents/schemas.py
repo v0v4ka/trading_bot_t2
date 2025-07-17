@@ -1,4 +1,5 @@
-from typing import Any, Dict, Optional
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
 
@@ -16,3 +17,24 @@ class SystemMessage(BaseModel):
 
     content: str
     metadata: Optional[Dict[str, Any]] = None
+
+
+class Signal(BaseModel):
+    """Trading signal from Signal Detection Agent."""
+
+    timestamp: datetime
+    type: str  # "BUY", "SELL", "HOLD"
+    confidence: float  # 0.0-1.0
+    details: Dict[str, Any]
+
+
+class TradingDecision(BaseModel):
+    """Final trading decision from Decision Maker Agent."""
+
+    action: str  # "BUY", "SELL", "HOLD"
+    confidence: float  # 0.0-1.0
+    reasoning: str
+    signals_used: List[Signal]
+    timestamp: datetime
+    entry_price: Optional[float] = None
+    stop_loss: Optional[float] = None
