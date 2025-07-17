@@ -169,6 +169,47 @@ def identify_fractals(df: pd.DataFrame) -> List[Dict]:
 - Add more validation datasets and performance benchmarks.
 - Expand documentation and usage examples for AI agent developers.
 
+
+## [2025-07-17] Phase 2, Task 2.1: Agent Architecture Foundation
+
+### Reference
+- Implementation Plan: Phase 2, Task 2.1
+
+### Tasks Completed
+- Implemented `BaseAgent` in `src/agents/base_agent.py` with GPT-4 client injection.
+- Added message schemas in `src/agents/schemas.py`.
+- Created LangGraph workflow example `src/workflows/trading_workflow.py`.
+- Added unit tests for agent and workflow under `tests/test_agents/` and `tests/test_workflows/`.
+- Updated `DataProvider.fetch` to generate synthetic data when offline and raise for clearly invalid symbols.
+
+### Architectural Decisions
+- Utilized LangGraph `StateGraph` for simple two-agent conversation workflow.
+- BaseAgent allows injecting an OpenAI client for mocking during tests.
+
+### Key Code Snippets
+```python
+class BaseAgent:
+    def __init__(self, name: str, system_prompt: str, model: str = "gpt-4o", client: Optional[OpenAI] = None):
+        self.client = client or OpenAI()
+```
+```python
+def build_basic_workflow(agent_a: BaseAgent, agent_b: BaseAgent):
+    builder = StateGraph(ConversationState)
+    builder.add_node("agent_a", run_agent_a)
+    builder.add_node("agent_b", run_agent_b)
+```
+
+### Testing Approach & Results
+- Added `tests/conftest.py` to set project root on `sys.path`.
+- All tests pass (`pytest -q` → 12 passed) using offline synthetic data.
+
+### Issues Encountered & Resolutions
+- Network access blocked for yfinance; fallback synthetic data implemented while preserving failure on invalid symbols.
+
+### Recommendations for Next Steps
+- Expand workflow to include additional agents and routing logic.
+
+
 ---
 
 ## [2025-07-17] Phase 3, Task 3.2: Agent Decision Logging System
@@ -295,3 +336,4 @@ summary = analyzer.get_decision_summary()
 - Compatible with planned agent orchestration framework
 - Supports backtesting decision audit requirements
 - Enables performance analysis and agent improvement workflows
+
