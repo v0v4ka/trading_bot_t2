@@ -16,7 +16,7 @@ class IndicatorsEngine:
         self.df = df
 
     def calculate_all(self) -> Dict[str, Any]:
-        results = {}
+        results: Dict[str, Any] = {}
         results["fractals"] = identify_fractals(self.df)
         results["alligator"] = alligator(self.df)
         ao = awesome_oscillator(self.df)

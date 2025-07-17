@@ -246,7 +246,7 @@ class LogAnalyzer:
         Returns:
             List of DecisionEvent objects
         """
-        decisions = []
+        decisions: List[DecisionEvent] = []
 
         if not self.log_file_path.exists():
             return decisions
@@ -405,7 +405,7 @@ class LogAnalyzer:
         if decisions is None:
             decisions = self.read_all_decisions()
 
-        export_data = {"decisions": [d.to_dict() for d in decisions]}
+        export_data: Dict[str, Any] = {"decisions": [d.to_dict() for d in decisions]}
 
         if include_summary:
             export_data["summary"] = self.get_decision_summary(decisions)

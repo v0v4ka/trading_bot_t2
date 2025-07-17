@@ -43,12 +43,14 @@ class SignalDetectionAgent:
 
     def _default_llm_client(self, prompt: str) -> float:
         try:
-            completion = openai.ChatCompletion.create(
+            client = openai.OpenAI()
+            completion = client.chat.completions.create(
                 model="gpt-4",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0,
             )
-            return float(completion.choices[0].message.content.strip())
+            content = completion.choices[0].message.content
+            return float(content.strip() if content else "0.5")
         except Exception as e:
             logger.error(f"LLM client error: {e}")
             return 0.5

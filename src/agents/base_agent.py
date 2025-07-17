@@ -32,5 +32,5 @@ class BaseAgent:
                 {"role": "user", "content": message.content},
             ],
         )
-        reply = response.choices[0].message.content
+        reply = response.choices[0].message.content or "No response"
         return AgentMessage(sender=self.name, content=reply)
