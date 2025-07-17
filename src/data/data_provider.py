@@ -66,6 +66,7 @@ class DataProvider:
                 end=self.end,
                 progress=False,
                 threads=False,
+                auto_adjust=True
             )
             time.sleep(RATE_LIMIT_SLEEP)
             if data.empty:
@@ -90,11 +91,11 @@ class DataProvider:
         candles = [
             OHLCV(
                 timestamp=idx.to_pydatetime(),
-                open=float(row["Open"]),
-                high=float(row["High"]),
-                low=float(row["Low"]),
-                close=float(row["Close"]),
-                volume=float(row["Volume"]),
+                open=float(row["Open"].iloc[0]) if hasattr(row["Open"], "iloc") else float(row["Open"]),
+                high=float(row["High"].iloc[0]) if hasattr(row["High"], "iloc") else float(row["High"]),
+                low=float(row["Low"].iloc[0]) if hasattr(row["Low"], "iloc") else float(row["Low"]),
+                close=float(row["Close"].iloc[0]) if hasattr(row["Close"], "iloc") else float(row["Close"]),
+                volume=float(row["Volume"].iloc[0]) if hasattr(row["Volume"], "iloc") else float(row["Volume"]),
             )
             for idx, row in data.iterrows()
         ]

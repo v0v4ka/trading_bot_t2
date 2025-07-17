@@ -6,10 +6,13 @@ import pandas as pd
 import numpy as np
 
 def smma(series: pd.Series, period: int) -> pd.Series:
-    smma = series.copy()
+    """Calculate Smoothed Moving Average (SMMA)."""
+    smma = pd.Series(index=series.index, dtype=float)
     smma.iloc[:period] = series.iloc[:period].mean()
+    
     for i in range(period, len(series)):
         smma.iloc[i] = (smma.iloc[i-1] * (period - 1) + series.iloc[i]) / period
+    
     return smma
 
 def alligator(df: pd.DataFrame) -> Dict[str, pd.Series]:
