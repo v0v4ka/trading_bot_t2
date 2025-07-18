@@ -41,7 +41,6 @@ class DataProvider:
 
     def fetch(self) -> OHLCVSeries:
         try:
-
             logger.info(
                 f"Fetching data for {self.symbol} [{self.interval}] from {self.start} to {self.end}"
             )
