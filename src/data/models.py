@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 
 import numpy as np
+import pandas as pd
 from pydantic.v1 import BaseModel, root_validator, validator
 
 
@@ -38,3 +39,21 @@ class OHLCVSeries(BaseModel):
     def detect_outliers(self) -> List[OHLCV]:
         # Placeholder: implement outlier detection (e.g., z-score)
         return []
+
+    def to_dataframe(self) -> pd.DataFrame:
+        """Convert OHLCVSeries to pandas DataFrame."""
+        data = []
+        for candle in self.candles:
+            data.append(
+                {
+                    "timestamp": candle.timestamp,
+                    "Open": candle.open,
+                    "High": candle.high,
+                    "Low": candle.low,
+                    "Close": candle.close,
+                    "Volume": candle.volume,
+                }
+            )
+        df = pd.DataFrame(data)
+        df.set_index("timestamp", inplace=True)
+        return df
