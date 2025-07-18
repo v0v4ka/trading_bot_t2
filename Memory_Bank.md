@@ -536,6 +536,38 @@ class DecisionMakerAgent(BaseAgent):
 - **Task 3.2**: Backtesting engine (uses decision audit trail for performance analysis)
 - **Phase 4**: Live trading integration (production-ready decision making)
 
+
+## [2025-07-18] Phase 3, Task 3.4: Command Line Interface
+
+### Reference
+- Implementation Plan: Phase 3, Task 3.4
+- APM Task Assignment: Command Line Interface Implementation
+
+### Tasks Completed
+- Created CLI entry point `src/cli/main.py` using `argparse` with subcommands (`config`, `data`, `version`, `backtest`, `visualize`, `analyze`, `logs`)
+- Added configuration utilities in `src/cli/config.py` supporting JSON and YAML files with defaults and validation
+- Implemented CLI helpers in `src/cli/utils.py`
+- Wrote unit tests under `tests/test_cli/` covering argument parsing, data fetch, and config loading
+- Updated `src/__init__.py` with `__version__` constant for version reporting
+- Documented CLI usage examples in `README.md`
+
+### Design Decisions
+- Adopted simple `argparse`-based architecture for minimal dependencies
+- Configuration validation ensures `data` and `backtest` sections exist
+- `DataProvider` integration uses `TBOT_TEST_MODE` for offline testing
+- Version command reads from package constant to avoid install requirement
+- Added future placeholders for backtesting, visualization, and logs commands
+
+### Usage Example
+```bash
+python -m src.cli.main data --symbol AAPL --interval 1d --start 2024-01-01 --end 2024-01-10
+```
+
+### Recommendations for Future Enhancements
+- Implement backtesting execution and progress reporting
+- Add `visualize` and `analyze` integrations when corresponding modules are ready
+- Support saving and editing configuration files via the `config` command
+=======
 ---
 
 ## [2025-07-18] Phase 3, Task 3.1: Backtesting Framework Implementation
@@ -786,4 +818,5 @@ print(f"Max Drawdown: {metrics['max_drawdown_percentage']:.2f}%")
 - **Phase 4**: Ready for visualization, CLI, and production enhancements
 
 This backtesting implementation represents a significant milestone in the trading bot MVP development, providing the foundation for strategy validation and performance analysis essential for successful algorithmic trading.
+
 
