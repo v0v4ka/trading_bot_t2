@@ -7,9 +7,7 @@ trading decisions based on signal confluence and Bill Williams methodology.
 
 import logging
 from datetime import datetime
-from typing import List, Optional, Dict
-
-import pandas as pd
+from typing import Dict, List, Optional
 
 from ..data.models import OHLCV
 from ..logging.decision_logger import DecisionLogger, DecisionType
