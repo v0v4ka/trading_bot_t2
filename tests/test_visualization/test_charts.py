@@ -2,18 +2,19 @@
 Tests for visualization chart creation and functionality.
 """
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock
 from datetime import datetime, timedelta
 from pathlib import Path
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
+from unittest.mock import MagicMock, Mock, patch
 
-from src.visualization.charts import ChartVisualizer, create_quick_chart
-from src.visualization.config import ChartConfig, ChartTheme
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import pytest
+
 from src.backtesting.metrics import BacktestResults, Trade
 from src.data.models import OHLCV, OHLCVSeries
+from src.visualization.charts import ChartVisualizer, create_quick_chart
+from src.visualization.config import ChartConfig, ChartTheme
 
 
 class TestChartVisualizer:

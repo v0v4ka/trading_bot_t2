@@ -8,12 +8,12 @@ from pathlib import Path
 from typing import List
 
 from src import __version__
-from src.cli.config import load_config, validate_config
-from src.data.data_provider import DataProvider
 from src.backtesting.config import BacktestConfig
 from src.backtesting.engine import BacktestEngine
+from src.cli.config import load_config, validate_config
+from src.data.data_provider import DataProvider
 from src.visualization.charts import ChartVisualizer, create_quick_chart
-from src.visualization.config import ChartTheme, BACKTESTING_CONFIG, PRESENTATION_CONFIG
+from src.visualization.config import BACKTESTING_CONFIG, PRESENTATION_CONFIG, ChartTheme
 
 
 def build_parser() -> argparse.ArgumentParser:

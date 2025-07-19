@@ -6,8 +6,12 @@ variables, configuration files, and runtime parameters.
 """
 
 import os
-from typing import Optional, Dict, Any
-from openai import OpenAI
+from typing import Any, Dict, Optional
+
+try:
+    from openai import OpenAI
+except ImportError:
+    OpenAI = None  # Handle missing OpenAI dependency gracefully
 
 from .cli.config import load_config
 
@@ -60,19 +64,21 @@ class LLMConfigurator:
         return os.getenv("TBOT_TEST_MODE", "0") == "1"
 
     @staticmethod
-    def create_openai_client() -> Optional[OpenAI]:
+    def create_openai_client() -> Optional[Any]:
         """Create OpenAI client with proper configuration."""
         if LLMConfigurator.is_test_mode():
             return None  # No client in test mode
-
+        
+        if OpenAI is None:
+            print("Warning: OpenAI package not available, LLM features disabled")
+            return None
+        
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
             print("Warning: No OPENAI_API_KEY found, LLM features disabled")
             return None
 
-        return OpenAI(api_key=api_key)
-
-    @staticmethod
+        return OpenAI(api_key=api_key)    @staticmethod
     def get_effective_config(config_path: Optional[str] = None) -> Dict[str, Any]:
         """Get effective LLM configuration from all sources."""
         import warnings
@@ -201,22 +207,35 @@ def configure_agent_llm(
 # Usage examples:
 def example_usage():
     """Examples of how to use LLM configuration."""
+    import warnings
 
-    # Method 1: Environment variables
+    # RECOMMENDED Method 1: Environment variables (.env file)
     os.environ["OPENAI_MODEL"] = "gpt-4.1-mini"
     os.environ["OPENAI_API_KEY"] = "your-key-here"
+    os.environ["SIGNAL_CONFIDENCE_THRESHOLD"] = "0.6"
+    os.environ["DECISION_CONFIDENCE_THRESHOLD"] = "0.7"
+    os.environ["USE_LLM_CONFIRMATION"] = "true"
 
-    # Method 2: Configuration file
-    config = LLMConfigurator.get_effective_config("config/llm_config.yml")
-    print(f"Using model: {config['model']}")
+    # Get configuration - .env values take precedence
+    config = LLMConfigurator.get_effective_config()
+    print(f"Using model: {config['model']} (source: {config['source']})")
 
-    # Method 3: Direct agent configuration
+    # Method 2: Configuration file (DEPRECATED for overlapping settings)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        config = LLMConfigurator.get_effective_config("config/llm_config.yml")
+        if w:
+            print(f"Deprecation warnings: {len(w)} warnings about config overlap")
+
+    # Method 3: Direct agent configuration (RECOMMENDED: .env only)
     from .agents.decision_maker_agent import DecisionMakerAgent
 
-    # Configure with specific model
-    agent = configure_agent_llm(
+    # Configure with .env settings (recommended)
+    agent = configure_agent_llm(DecisionMakerAgent)
+    
+    # Configure with model override
+    agent_override = configure_agent_llm(
         DecisionMakerAgent,
-        config_path="config/llm_config.yml",
         model_override="gpt-4.1-mini",
     )
 

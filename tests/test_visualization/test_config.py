@@ -2,17 +2,18 @@
 Tests for visualization chart configuration.
 """
 
-import pytest
 from unittest.mock import patch
 
+import pytest
+
 from src.visualization.config import (
-    ChartConfig,
-    ChartTheme,
-    get_theme_config,
-    create_custom_config,
     BACKTESTING_CONFIG,
     LIVE_TRADING_CONFIG,
     PRESENTATION_CONFIG,
+    ChartConfig,
+    ChartTheme,
+    create_custom_config,
+    get_theme_config,
 )
 
 
