@@ -68,17 +68,18 @@ class LLMConfigurator:
         """Create OpenAI client with proper configuration."""
         if LLMConfigurator.is_test_mode():
             return None  # No client in test mode
-        
+
         if OpenAI is None:
             print("Warning: OpenAI package not available, LLM features disabled")
             return None
-        
+
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
             print("Warning: No OPENAI_API_KEY found, LLM features disabled")
             return None
 
-        return OpenAI(api_key=api_key)    @staticmethod
+        return OpenAI(api_key=api_key) @ staticmethod
+
     def get_effective_config(config_path: Optional[str] = None) -> Dict[str, Any]:
         """Get effective LLM configuration from all sources."""
         import warnings
@@ -232,7 +233,7 @@ def example_usage():
 
     # Configure with .env settings (recommended)
     agent = configure_agent_llm(DecisionMakerAgent)
-    
+
     # Configure with model override
     agent_override = configure_agent_llm(
         DecisionMakerAgent,
