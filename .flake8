@@ -1,0 +1,18 @@
+[flake8]
+max-line-length = 127
+max-complexity = 10
+exclude = 
+    .git,
+    __pycache__,
+    .venv,
+    .pytest_cache,
+    .mypy_cache,
+    .coverage,
+    build,
+    dist,
+    *.egg-info
+ignore = 
+    # Allow line too long for strings and comments
+    E501,
+    # Allow line break before binary operator
+    W503
