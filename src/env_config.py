@@ -135,6 +135,71 @@ class TradingBotConfig:
         self.outputs_dir = get_env_var("OUTPUTS_DIR", "outputs/")
         self.cache_dir = get_env_var("CACHE_DIR", "cache/")
 
+        # Backtesting Scenarios
+        self.bull_market_start = get_env_var("BULL_MARKET_START", "2020-03-01")
+        self.bull_market_end = get_env_var("BULL_MARKET_END", "2021-12-31")
+        self.bull_market_capital = get_env_var("BULL_MARKET_CAPITAL", 10000.0, float)
+        self.bull_market_description = get_env_var(
+            "BULL_MARKET_DESCRIPTION", "Bull market recovery period"
+        )
+
+        self.bear_market_start = get_env_var("BEAR_MARKET_START", "2022-01-01")
+        self.bear_market_end = get_env_var("BEAR_MARKET_END", "2022-12-31")
+        self.bear_market_capital = get_env_var("BEAR_MARKET_CAPITAL", 10000.0, float)
+        self.bear_market_description = get_env_var(
+            "BEAR_MARKET_DESCRIPTION", "Bear market correction period"
+        )
+
+        self.sideways_market_start = get_env_var("SIDEWAYS_MARKET_START", "2019-01-01")
+        self.sideways_market_end = get_env_var("SIDEWAYS_MARKET_END", "2019-12-31")
+        self.sideways_market_capital = get_env_var(
+            "SIDEWAYS_MARKET_CAPITAL", 10000.0, float
+        )
+        self.sideways_market_description = get_env_var(
+            "SIDEWAYS_MARKET_DESCRIPTION", "Sideways/consolidation period"
+        )
+
+        # Environment Configuration
+        self.environment = get_env_var("ENVIRONMENT", "development")
+
+        # Development Environment
+        self.dev_data_source = get_env_var("DEV_DATA_SOURCE", "yahoo")
+        self.dev_cache_enabled = get_env_var("DEV_CACHE_ENABLED", True, bool)
+        self.dev_debug_mode = get_env_var("DEV_DEBUG_MODE", True, bool)
+
+        # Staging Environment
+        self.staging_data_source = get_env_var("STAGING_DATA_SOURCE", "yahoo")
+        self.staging_cache_enabled = get_env_var("STAGING_CACHE_ENABLED", True, bool)
+        self.staging_debug_mode = get_env_var("STAGING_DEBUG_MODE", False, bool)
+
+        # Production Environment
+        self.prod_data_source = get_env_var("PROD_DATA_SOURCE", "premium_api")
+        self.prod_cache_enabled = get_env_var("PROD_CACHE_ENABLED", False, bool)
+        self.prod_debug_mode = get_env_var("PROD_DEBUG_MODE", False, bool)
+
+        # Agent Workflow Configurations
+        self.conservative_signal_confirmation_steps = get_env_var(
+            "CONSERVATIVE_SIGNAL_CONFIRMATION_STEPS", 3, int
+        )
+        self.conservative_risk_management = get_env_var(
+            "CONSERVATIVE_RISK_MANAGEMENT", "strict"
+        )
+        self.conservative_position_sizing = get_env_var(
+            "CONSERVATIVE_POSITION_SIZING", "kelly_criterion"
+        )
+
+        self.aggressive_signal_confirmation_steps = get_env_var(
+            "AGGRESSIVE_SIGNAL_CONFIRMATION_STEPS", 1, int
+        )
+        self.aggressive_risk_management = get_env_var(
+            "AGGRESSIVE_RISK_MANAGEMENT", "moderate"
+        )
+        self.aggressive_position_sizing = get_env_var(
+            "AGGRESSIVE_POSITION_SIZING", "fixed_percentage"
+        )
+
+        self.active_strategy = get_env_var("ACTIVE_STRATEGY", "conservative")
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert configuration to dictionary."""
         return {
@@ -146,6 +211,81 @@ class TradingBotConfig:
     def is_production_mode(self) -> bool:
         """Check if running in production mode (LLM enabled)."""
         return not self.test_mode and bool(self.openai_api_key)
+
+    def get_current_environment_config(self) -> Dict[str, Any]:
+        """Get configuration for the current environment."""
+        env = self.environment.lower()
+
+        if env == "production":
+            return {
+                "data_source": self.prod_data_source,
+                "cache_enabled": self.prod_cache_enabled,
+                "debug_mode": self.prod_debug_mode,
+            }
+        elif env == "staging":
+            return {
+                "data_source": self.staging_data_source,
+                "cache_enabled": self.staging_cache_enabled,
+                "debug_mode": self.staging_debug_mode,
+            }
+        else:  # development (default)
+            return {
+                "data_source": self.dev_data_source,
+                "cache_enabled": self.dev_cache_enabled,
+                "debug_mode": self.dev_debug_mode,
+            }
+
+    def get_backtesting_scenario(self, scenario: str) -> Dict[str, Any]:
+        """Get backtesting scenario configuration."""
+        scenarios = {
+            "bull_market": {
+                "start": self.bull_market_start,
+                "end": self.bull_market_end,
+                "initial_capital": self.bull_market_capital,
+                "description": self.bull_market_description,
+            },
+            "bear_market": {
+                "start": self.bear_market_start,
+                "end": self.bear_market_end,
+                "initial_capital": self.bear_market_capital,
+                "description": self.bear_market_description,
+            },
+            "sideways_market": {
+                "start": self.sideways_market_start,
+                "end": self.sideways_market_end,
+                "initial_capital": self.sideways_market_capital,
+                "description": self.sideways_market_description,
+            },
+        }
+
+        if scenario not in scenarios:
+            raise ValueError(
+                f"Unknown backtesting scenario: {scenario}. Available: {list(scenarios.keys())}"
+            )
+
+        return scenarios[scenario]
+
+    def get_strategy_config(self, strategy: str = None) -> Dict[str, Any]:
+        """Get agent strategy configuration."""
+        if strategy is None:
+            strategy = self.active_strategy
+
+        if strategy == "conservative":
+            return {
+                "signal_confirmation_steps": self.conservative_signal_confirmation_steps,
+                "risk_management": self.conservative_risk_management,
+                "position_sizing": self.conservative_position_sizing,
+            }
+        elif strategy == "aggressive":
+            return {
+                "signal_confirmation_steps": self.aggressive_signal_confirmation_steps,
+                "risk_management": self.aggressive_risk_management,
+                "position_sizing": self.aggressive_position_sizing,
+            }
+        else:
+            raise ValueError(
+                f"Unknown strategy: {strategy}. Available: conservative, aggressive"
+            )
 
     def validate(self) -> list[str]:
         """Validate configuration and return list of errors."""
