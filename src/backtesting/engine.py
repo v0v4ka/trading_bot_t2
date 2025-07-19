@@ -89,7 +89,8 @@ class BacktestEngine:
             self._close_all_positions(df.iloc[-1])
 
             # 5. Generate final equity curve
-            self._update_equity_curve(df.iloc[-1]["timestamp"])
+            final_timestamp = df.index[-1] if hasattr(df.index[-1], 'to_pydatetime') else datetime.now()
+            self._update_equity_curve(final_timestamp)
 
             self.results.end_time = datetime.now()
 
@@ -157,10 +158,10 @@ class BacktestEngine:
 
         for i in range(start_idx, len(df)):
             current_bar = df.iloc[i]
+            # Extract timestamp from index or column
             timestamp = (
-                current_bar["timestamp"]
-                if "timestamp" in current_bar
-                else current_bar.name
+                current_bar.name if hasattr(current_bar, 'name') and current_bar.name is not None
+                else current_bar.get("timestamp", datetime.now())
             )
 
             # Check for stop losses first
@@ -235,9 +236,8 @@ class BacktestEngine:
             ohlcv_data = [
                 OHLCV(
                     timestamp=(
-                        current_bar["timestamp"]
-                        if "timestamp" in current_bar
-                        else current_bar.name
+                        current_bar.name if hasattr(current_bar, 'name') and current_bar.name is not None
+                        else current_bar.get("timestamp", datetime.now())
                     ),
                     open=current_bar["Open"],
                     high=current_bar["High"],

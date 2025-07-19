@@ -183,7 +183,7 @@ class TestChartVisualizer:
         with pytest.raises(ValueError, match="Data must have datetime index"):
             visualizer._prepare_data(df)
     
-    @patch('matplotlib.pyplot.subplots')
+    @patch("matplotlib.pyplot.subplots")
     def test_create_figure_layout(self, mock_subplots):
         """Test figure layout creation."""
         visualizer = ChartVisualizer()
@@ -206,7 +206,7 @@ class TestChartVisualizer:
         
         assert result == mock_fig
     
-    @patch('src.visualization.charts.alligator')
+    @patch("src.visualization.charts.alligator")
     def test_plot_alligator_success(self, mock_alligator, sample_ohlcv_data):
         """Test successful Alligator plotting."""
         visualizer = ChartVisualizer()
@@ -225,7 +225,7 @@ class TestChartVisualizer:
         # Verify plot calls were made
         assert mock_ax.plot.call_count == 3  # Three lines (jaw, teeth, lips)
     
-    @patch('src.visualization.charts.alligator')
+    @patch("src.visualization.charts.alligator")
     def test_plot_alligator_exception_handling(self, mock_alligator, sample_ohlcv_data):
         """Test Alligator plotting exception handling."""
         visualizer = ChartVisualizer()
@@ -235,11 +235,11 @@ class TestChartVisualizer:
         mock_alligator.side_effect = Exception("Calculation failed")
         
         # Should not raise exception, should log warning
-        with patch('src.visualization.charts.logger') as mock_logger:
+        with patch("src.visualization.charts.logger") as mock_logger:
             visualizer._plot_alligator(mock_ax, sample_ohlcv_data)
             mock_logger.warning.assert_called_once()
     
-    @patch('src.visualization.charts.identify_fractals')
+    @patch("src.visualization.charts.identify_fractals")
     def test_plot_fractals_success(self, mock_identify_fractals, sample_ohlcv_data):
         """Test successful Fractal plotting."""
         visualizer = ChartVisualizer()
@@ -266,7 +266,7 @@ class TestChartVisualizer:
         # Verify scatter calls were made
         assert mock_ax.scatter.call_count == 2  # Two fractals
     
-    @patch('src.visualization.charts.awesome_oscillator')
+    @patch("src.visualization.charts.awesome_oscillator")
     def test_plot_awesome_oscillator_success(self, mock_ao, sample_ohlcv_data):
         """Test successful Awesome Oscillator plotting."""
         visualizer = ChartVisualizer()
@@ -328,12 +328,12 @@ class TestChartVisualizer:
         results = BacktestResults(config={})
         results.equity_curve = []
         
-        with patch('src.visualization.charts.logger') as mock_logger:
+        with patch("src.visualization.charts.logger") as mock_logger:
             visualizer._plot_equity_curve(mock_ax, results)
             mock_logger.warning.assert_called_once()
     
-    @patch('matplotlib.pyplot.tight_layout')
-    @patch('matplotlib.pyplot.setp')
+    @patch("matplotlib.pyplot.tight_layout")
+    @patch("matplotlib.pyplot.setp")
     def test_configure_chart_appearance(self, mock_setp, mock_tight_layout, sample_ohlcv_data):
         """Test chart appearance configuration."""
         visualizer = ChartVisualizer()
@@ -356,7 +356,7 @@ class TestChartVisualizer:
         # Verify tight_layout was called
         mock_tight_layout.assert_called_once()
     
-    @patch('matplotlib.pyplot.savefig')
+    @patch("matplotlib.pyplot.savefig")
     def test_save_chart(self, mock_savefig):
         """Test chart saving functionality."""
         visualizer = ChartVisualizer()
@@ -376,7 +376,7 @@ class TestChartVisualizer:
         assert args[0] == save_path
         assert kwargs['dpi'] == visualizer.config.export_dpi
     
-    @patch('src.visualization.charts.ChartVisualizer.create_integrated_chart')
+    @patch("src.visualization.charts.ChartVisualizer.create_integrated_chart")
     def test_create_backtesting_summary_chart(self, mock_create_chart, sample_ohlcv_data, sample_backtest_results):
         """Test backtesting summary chart creation."""
         visualizer = ChartVisualizer()
@@ -426,7 +426,7 @@ class TestCreateQuickChart:
         }
         return pd.DataFrame(data, index=dates)
     
-    @patch('src.visualization.charts.ChartVisualizer.create_integrated_chart')
+    @patch("src.visualization.charts.ChartVisualizer.create_integrated_chart")
     def test_create_quick_chart_basic(self, mock_create_chart, sample_data):
         """Test basic quick chart creation."""
         mock_fig = Mock()
@@ -440,7 +440,7 @@ class TestCreateQuickChart:
         )
         assert result == mock_fig
     
-    @patch('src.visualization.charts.ChartVisualizer.create_integrated_chart')
+    @patch("src.visualization.charts.ChartVisualizer.create_integrated_chart")
     def test_create_quick_chart_with_all_params(self, mock_create_chart, sample_data):
         """Test quick chart creation with all parameters."""
         mock_fig = Mock()
