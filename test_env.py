@@ -17,7 +17,7 @@ def test_env_config():
     """Test environment configuration loading."""
     print("🔧 Trading Bot Environment Configuration Test")
     print("=" * 50)
-    
+
     # Test configuration loading
     try:
         test_config = TradingBotConfig()
@@ -25,7 +25,7 @@ def test_env_config():
     except Exception as e:
         print(f"❌ Error loading configuration: {e}")
         return False
-    
+
     # Validate configuration
     errors = test_config.validate()
     if errors:
@@ -35,7 +35,7 @@ def test_env_config():
         return False
     else:
         print("✅ Configuration validation passed")
-    
+
     # Display key settings
     print("\n📊 Key Configuration Settings:")
     print(f"   OpenAI Model: {test_config.openai_model}")
@@ -47,18 +47,18 @@ def test_env_config():
     print(f"   Default Symbol: {test_config.default_symbol}")
     print(f"   Default Capital: ${test_config.default_initial_capital:,.2f}")
     print(f"   Chart Theme: {test_config.default_chart_theme}")
-    
+
     # Test global config instance
     print("\n🌐 Global Configuration Instance:")
     print(f"   Model: {config.openai_model}")
     print(f"   Test Mode: {config.test_mode}")
-    
+
     return True
 
 
 if __name__ == "__main__":
     success = test_env_config()
-    
+
     if success:
         print("\n✅ Environment configuration test passed!")
         print("\n🚀 Ready to run trading bot commands:")
