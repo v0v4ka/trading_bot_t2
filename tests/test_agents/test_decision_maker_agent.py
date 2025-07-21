@@ -9,10 +9,51 @@ from unittest.mock import Mock, patch
 from src.agents.decision_maker_agent import DecisionMakerAgent
 from src.agents.schemas import Signal
 from src.data.models import OHLCV
-from src.logging.decision_logger import DecisionLogger
+from src.decision_logging.decision_logger import DecisionLogger
 
 
 class TestDecisionMakerAgent(unittest.TestCase):
+    def test_three_wise_men_first(self):
+        """Test detection of First Wise Man staged entry."""
+        signals = [
+            Signal(
+                timestamp=datetime.now(),
+                type="BUY",
+                confidence=0.9,
+                details={"indicator": "alligator", "outside_mouth": True, "ao_color": "green"},
+            )
+        ]
+        decision = self.agent.make_decision(signals, self.market_data)
+        self.assertEqual(decision.action, "BUY")
+        self.assertIn("First Wise Man", decision.reasoning)
+
+    def test_three_wise_men_second(self):
+        """Test detection of Second Wise Man staged entry."""
+        signals = [
+            Signal(
+                timestamp=datetime.now(),
+                type="BUY",
+                confidence=0.85,
+                details={"indicator": "ao", "saucer": True},
+            )
+        ]
+        decision = self.agent.make_decision(signals, self.market_data)
+        self.assertEqual(decision.action, "BUY_ADDON")
+        self.assertIn("Second Wise Man", decision.reasoning)
+
+    def test_three_wise_men_third(self):
+        """Test detection of Third Wise Man staged entry."""
+        signals = [
+            Signal(
+                timestamp=datetime.now(),
+                type="BUY",
+                confidence=0.88,
+                details={"indicator": "fractal", "breakout": True},
+            )
+        ]
+        decision = self.agent.make_decision(signals, self.market_data)
+        self.assertEqual(decision.action, "BUY_ADDON2")
+        self.assertIn("Third Wise Man", decision.reasoning)
     """Test cases for Decision Maker Agent."""
 
     def setUp(self):

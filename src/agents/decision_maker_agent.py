@@ -10,7 +10,7 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 from ..data.models import OHLCV
-from ..logging.decision_logger import DecisionLogger, DecisionType
+from ..decision_logging.decision_logger import DecisionLogger, DecisionType
 from .base_agent import BaseAgent
 from .schemas import Signal, TradingDecision
 
@@ -18,6 +18,32 @@ logger = logging.getLogger("trading_bot.decision_maker")
 
 
 class DecisionMakerAgent(BaseAgent):
+    def detect_three_wise_men(self, signals: List[Signal], market_data: OHLCV) -> Dict[str, bool]:
+        """
+        Detect Three Wise Men staged entry signals.
+        Returns a dict: {'first': bool, 'second': bool, 'third': bool}
+        """
+        result = {'first': False, 'second': False, 'third': False}
+        # First Wise Man: Reversal bar outside Alligator’s mouth, confirmed by AO color
+        for s in signals:
+            if (
+                s.details.get('indicator') == 'alligator'
+                and s.details.get('outside_mouth', False)
+                and s.details.get('ao_color') in ['green', 'red']
+            ):
+                result['first'] = True
+                break
+        # Second Wise Man: AO saucer pattern for add-on entry
+        for s in signals:
+            if s.details.get('indicator') == 'ao' and s.details.get('saucer', False):
+                result['second'] = True
+                break
+        # Third Wise Man: Fractal breakout for further add-on
+        for s in signals:
+            if s.details.get('indicator') == 'fractal' and s.details.get('breakout', False):
+                result['third'] = True
+                break
+        return result
     """
     Decision Maker Agent that processes signals and makes trading decisions.
 
@@ -79,14 +105,32 @@ class DecisionMakerAgent(BaseAgent):
         # Evaluate signal confluence
         confluence_score = self.evaluate_confluence(signals)
 
-        # Determine trading action
-        action = self.determine_action(confluence_score, signals)
+        # Detect Three Wise Men staged entry signals
+        wise_men = self.detect_three_wise_men(signals, market_data)
+
+        # Determine staged action
+        staged_action = None
+        staged_reason = []
+        if wise_men['first']:
+            staged_action = 'BUY'
+            staged_reason.append('First Wise Man: reversal bar outside Alligator’s mouth, AO color confirmed')
+        if wise_men['second']:
+            staged_action = 'BUY_ADDON'
+            staged_reason.append('Second Wise Man: AO saucer pattern detected')
+        if wise_men['third']:
+            staged_action = 'BUY_ADDON2'
+            staged_reason.append('Third Wise Man: Fractal breakout detected')
+
+        # Determine trading action (fallback to confluence logic if no staged entry)
+        action = staged_action if staged_action else self.determine_action(confluence_score, signals)
 
         # Calculate confidence score
         confidence = self.calculate_confidence(confluence_score, signals)
 
         # Generate reasoning
         reasoning = self.generate_reasoning(signals, confluence_score, action)
+        if staged_reason:
+            reasoning += ' | Staged Entry: ' + ', '.join(staged_reason)
 
         # Create decision
         decision = TradingDecision(
