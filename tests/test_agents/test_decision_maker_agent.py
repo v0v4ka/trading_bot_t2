@@ -13,6 +13,34 @@ from src.decision_logging.decision_logger import DecisionLogger
 
 
 class TestDecisionMakerAgent(unittest.TestCase):
+    def test_alligator_awake_allows_trade(self):
+        """Trade allowed when Alligator is awake."""
+        signals = [
+            Signal(
+                timestamp=datetime.now(),
+                type="BUY",
+                confidence=0.9,
+                details={"indicator": "alligator", "jaw": 105, "teeth": 102, "lips": 100},
+            )
+        ]
+        decision = self.agent.make_decision(signals, self.market_data)
+        self.assertNotEqual(decision.action, "HOLD")
+        self.assertIn("Alligator state: awake", decision.reasoning)
+
+    def test_alligator_sleeping_filters_trade(self):
+        """Trade filtered when Alligator is sleeping."""
+        signals = [
+            Signal(
+                timestamp=datetime.now(),
+                type="BUY",
+                confidence=0.9,
+                details={"indicator": "alligator", "jaw": 102, "teeth": 101.7, "lips": 101.5},
+            )
+        ]
+        decision = self.agent.make_decision(signals, self.market_data)
+        self.assertEqual(decision.action, "HOLD")
+        self.assertIn("Alligator sleeping: trade filtered", decision.reasoning)
+        self.assertIn("Alligator state: sleeping", decision.reasoning)
     def test_three_wise_men_first(self):
         """Test detection of First Wise Man staged entry."""
         signals = [

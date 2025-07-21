@@ -18,6 +18,27 @@ logger = logging.getLogger("trading_bot.decision_maker")
 
 
 class DecisionMakerAgent(BaseAgent):
+    def detect_alligator_state(self, signals: List[Signal], market_data: OHLCV) -> str:
+        """
+        Detect Alligator state: 'awake' or 'sleeping'.
+        Returns 'awake' if Alligator lines are sufficiently separated, else 'sleeping'.
+        Assumes signal.details['indicator'] == 'alligator' contains line values.
+        """
+        for s in signals:
+            if s.details.get('indicator') == 'alligator':
+                jaw = s.details.get('jaw')
+                teeth = s.details.get('teeth')
+                lips = s.details.get('lips')
+                # Example logic: Alligator is awake if lines are separated by a threshold
+                if jaw is not None and teeth is not None and lips is not None:
+                    sep1 = abs(jaw - teeth)
+                    sep2 = abs(teeth - lips)
+                    threshold = 0.5  # This can be tuned
+                    if sep1 > threshold and sep2 > threshold:
+                        return 'awake'
+                    else:
+                        return 'sleeping'
+        return 'unknown'
     def detect_three_wise_men(self, signals: List[Signal], market_data: OHLCV) -> Dict[str, bool]:
         """
         Detect Three Wise Men staged entry signals.
@@ -105,6 +126,9 @@ class DecisionMakerAgent(BaseAgent):
         # Evaluate signal confluence
         confluence_score = self.evaluate_confluence(signals)
 
+        # Detect Alligator state
+        alligator_state = self.detect_alligator_state(signals, market_data)
+
         # Detect Three Wise Men staged entry signals
         wise_men = self.detect_three_wise_men(signals, market_data)
 
@@ -121,8 +145,28 @@ class DecisionMakerAgent(BaseAgent):
             staged_action = 'BUY_ADDON2'
             staged_reason.append('Third Wise Man: Fractal breakout detected')
 
-        # Determine trading action (fallback to confluence logic if no staged entry)
-        action = staged_action if staged_action else self.determine_action(confluence_score, signals)
+        # Filter trades based on Alligator state
+        if alligator_state == 'sleeping':
+            action = 'HOLD'
+            staged_reason.append('Alligator sleeping: trade filtered')
+        elif alligator_state == 'awake':
+            # If Alligator is awake, allow trade if:
+            # - staged_action is present
+            # - OR at least one strong BUY/SELL signal (confidence >= 0.8)
+            if staged_action:
+                action = staged_action
+            else:
+                strong_buy = any(s.type == 'BUY' and s.confidence >= 0.8 for s in signals)
+                strong_sell = any(s.type == 'SELL' and s.confidence >= 0.8 for s in signals)
+                if strong_buy:
+                    action = 'BUY'
+                elif strong_sell:
+                    action = 'SELL'
+                else:
+                    action = self.determine_action(confluence_score, signals)
+        else:
+            # If state unknown, allow staged entry or confluence logic
+            action = staged_action if staged_action else self.determine_action(confluence_score, signals)
 
         # Calculate confidence score
         confidence = self.calculate_confidence(confluence_score, signals)
@@ -131,6 +175,7 @@ class DecisionMakerAgent(BaseAgent):
         reasoning = self.generate_reasoning(signals, confluence_score, action)
         if staged_reason:
             reasoning += ' | Staged Entry: ' + ', '.join(staged_reason)
+        reasoning += f' | Alligator state: {alligator_state}'
 
         # Create decision
         decision = TradingDecision(
