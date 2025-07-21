@@ -18,6 +18,19 @@ logger = logging.getLogger("trading_bot.decision_maker")
 
 
 class DecisionMakerAgent(BaseAgent):
+    def calculate_position_size(self, staged_action: str) -> float:
+        """
+        Calculate position size based on staged entry (reverse pyramiding).
+        First entry: 1.0 (full size), Second: 0.5, Third: 0.25, else: 1.0
+        """
+        if staged_action == 'BUY':
+            return 1.0
+        elif staged_action == 'BUY_ADDON':
+            return 0.5
+        elif staged_action == 'BUY_ADDON2':
+            return 0.25
+        else:
+            return 1.0
     def detect_alligator_state(self, signals: List[Signal], market_data: OHLCV) -> str:
         """
         Detect Alligator state: 'awake' or 'sleeping'.
@@ -145,6 +158,9 @@ class DecisionMakerAgent(BaseAgent):
             staged_action = 'BUY_ADDON2'
             staged_reason.append('Third Wise Man: Fractal breakout detected')
 
+        # Calculate position size for reverse pyramiding
+        position_size = self.calculate_position_size(staged_action) if staged_action else 1.0
+
         # Filter trades based on Alligator state
         if alligator_state == 'sleeping':
             action = 'HOLD'
@@ -190,6 +206,7 @@ class DecisionMakerAgent(BaseAgent):
                 if action != "HOLD"
                 else None
             ),
+            position_size=position_size if action != "HOLD" else None,
         )
 
         # Log the decision
@@ -354,7 +371,7 @@ class DecisionMakerAgent(BaseAgent):
 
         return " | ".join(reasoning_parts)
 
-    def calculate_stop_loss(self, market_data: OHLCV, action: str) -> Optional[float]:
+    def calculate_stop_loss(self, market_data: OHLCV, action: str, signals: Optional[List[Signal]] = None, staged_action: Optional[str] = None) -> Optional[float]:
         """
         Calculate stop loss level based on Bill Williams methodology.
 
@@ -368,14 +385,52 @@ class DecisionMakerAgent(BaseAgent):
         if action == "HOLD":
             return None
 
-        # Simple stop loss: 2% from entry price
-        stop_loss_pct = 0.02
+        reversal_bar = None
+        trailing_fractal = None
+        if signals:
+            for s in signals:
+                if s.details.get('indicator') == 'alligator' and s.details.get('outside_mouth', False):
+                    reversal_bar = s.details.get('bar_low') if action.startswith('BUY') else s.details.get('bar_high')
+                    break
+            for s in reversed(signals):
+                if s.details.get('indicator') == 'fractal' and s.details.get('breakout', False):
+                    trailing_fractal = s.details.get('fractal_low') if action.startswith('BUY') else s.details.get('fractal_high')
+                    break
 
+        # Initial entry: stop below/above reversal bar
+        if staged_action == 'BUY' or staged_action == 'SELL':
+            if reversal_bar is not None:
+                if action.startswith('BUY'):
+                    return reversal_bar * 0.995  # 0.5% below
+                else:
+                    return reversal_bar * 1.005  # 0.5% above
+            else:
+                # fallback to 2% rule
+                stop_loss_pct = 0.02
+                if action == "BUY":
+                    return market_data.close * (1 - stop_loss_pct)
+                elif action == "SELL":
+                    return market_data.close * (1 + stop_loss_pct)
+        # Add-ons: trailing stop to most recent fractal
+        elif staged_action in ['BUY_ADDON', 'BUY_ADDON2', 'SELL_ADDON', 'SELL_ADDON2']:
+            if trailing_fractal is not None:
+                if action.startswith('BUY'):
+                    return trailing_fractal * 0.995
+                else:
+                    return trailing_fractal * 1.005
+            else:
+                # fallback to 2% rule
+                stop_loss_pct = 0.02
+                if action == "BUY":
+                    return market_data.close * (1 - stop_loss_pct)
+                elif action == "SELL":
+                    return market_data.close * (1 + stop_loss_pct)
+        # fallback for unknown
+        stop_loss_pct = 0.02
         if action == "BUY":
             return market_data.close * (1 - stop_loss_pct)
         elif action == "SELL":
             return market_data.close * (1 + stop_loss_pct)
-
         return None
 
     def _log_decision(self, decision: TradingDecision, market_data: OHLCV) -> None:

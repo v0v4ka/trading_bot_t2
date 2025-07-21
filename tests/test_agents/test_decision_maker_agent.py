@@ -68,6 +68,7 @@ class TestDecisionMakerAgent(unittest.TestCase):
         decision = self.agent.make_decision(signals, self.market_data)
         self.assertEqual(decision.action, "BUY_ADDON")
         self.assertIn("Second Wise Man", decision.reasoning)
+        self.assertEqual(decision.position_size, 0.5)
 
     def test_three_wise_men_third(self):
         """Test detection of Third Wise Man staged entry."""
@@ -82,6 +83,7 @@ class TestDecisionMakerAgent(unittest.TestCase):
         decision = self.agent.make_decision(signals, self.market_data)
         self.assertEqual(decision.action, "BUY_ADDON2")
         self.assertIn("Third Wise Man", decision.reasoning)
+        self.assertEqual(decision.position_size, 0.25)
     """Test cases for Decision Maker Agent."""
 
     def setUp(self):
@@ -359,19 +361,65 @@ class TestDecisionMakerAgent(unittest.TestCase):
 
     def test_calculate_stop_loss_buy(self):
         """Test stop loss calculation for BUY action."""
+        # Test fallback 2% rule
         stop_loss = self.agent.calculate_stop_loss(self.market_data, "BUY")
-
-        # Should be 2% below entry price
         expected = self.market_data.close * 0.98
         self.assertAlmostEqual(stop_loss, expected, places=2)
 
+        # Test initial stop below reversal bar
+        signals = [
+            Signal(
+                timestamp=datetime.now(),
+                type="BUY",
+                confidence=0.9,
+                details={"indicator": "alligator", "outside_mouth": True, "bar_low": 100.0},
+            )
+        ]
+        stop_loss = self.agent.calculate_stop_loss(self.market_data, "BUY", signals, staged_action="BUY")
+        self.assertAlmostEqual(stop_loss, 99.5, places=2)
+
+        # Test trailing stop for add-on
+        signals = [
+            Signal(
+                timestamp=datetime.now(),
+                type="BUY",
+                confidence=0.9,
+                details={"indicator": "fractal", "breakout": True, "fractal_low": 101.0},
+            )
+        ]
+        stop_loss = self.agent.calculate_stop_loss(self.market_data, "BUY", signals, staged_action="BUY_ADDON")
+        self.assertAlmostEqual(stop_loss, 100.495, places=2)
+
     def test_calculate_stop_loss_sell(self):
         """Test stop loss calculation for SELL action."""
+        # Test fallback 2% rule
         stop_loss = self.agent.calculate_stop_loss(self.market_data, "SELL")
-
-        # Should be 2% above entry price
         expected = self.market_data.close * 1.02
         self.assertAlmostEqual(stop_loss, expected, places=2)
+
+        # Test initial stop above reversal bar
+        signals = [
+            Signal(
+                timestamp=datetime.now(),
+                type="SELL",
+                confidence=0.9,
+                details={"indicator": "alligator", "outside_mouth": True, "bar_high": 105.0},
+            )
+        ]
+        stop_loss = self.agent.calculate_stop_loss(self.market_data, "SELL", signals, staged_action="SELL")
+        self.assertAlmostEqual(stop_loss, 105.525, places=2)
+
+        # Test trailing stop for add-on
+        signals = [
+            Signal(
+                timestamp=datetime.now(),
+                type="SELL",
+                confidence=0.9,
+                details={"indicator": "fractal", "breakout": True, "fractal_high": 104.0},
+            )
+        ]
+        stop_loss = self.agent.calculate_stop_loss(self.market_data, "SELL", signals, staged_action="SELL_ADDON")
+        self.assertAlmostEqual(stop_loss, 104.52, places=2)
 
     def test_calculate_stop_loss_hold(self):
         """Test stop loss calculation for HOLD action."""
