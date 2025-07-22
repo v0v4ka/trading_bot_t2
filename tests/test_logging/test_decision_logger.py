@@ -15,7 +15,7 @@ from unittest.mock import mock_open, patch
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from src.logging.decision_logger import (
+from src.decision_logging.decision_logger import (
     DecisionEvent,
     DecisionLogger,
     DecisionType,

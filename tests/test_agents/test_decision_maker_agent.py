@@ -13,6 +13,47 @@ from src.decision_logging.decision_logger import DecisionLogger
 
 
 class TestDecisionMakerAgent(unittest.TestCase):
+    def test_exit_on_opposite_reversal_bar(self):
+        """Exit triggered by opposite reversal bar (SELL) when in BUY position."""
+        signals = [
+            Signal(
+                timestamp=datetime.now(),
+                type="SELL",
+                confidence=0.9,
+                details={"indicator": "alligator", "outside_mouth": True, "bar_high": 105.0},
+            )
+        ]
+        decision = self.agent.make_decision(signals, self.market_data, current_position="BUY")
+        self.assertEqual(decision.action, "EXIT")
+        self.assertIn("Exit: Opposite reversal bar (SELL)", decision.reasoning)
+
+    def test_exit_on_ao_cross(self):
+        """Exit triggered by AO zero-line cross (to negative for BUY position)."""
+        signals = [
+            Signal(
+                timestamp=datetime.now(),
+                type="BUY",
+                confidence=0.9,
+                details={"indicator": "ao", "zero_cross": True, "ao_value": -0.5},
+            )
+        ]
+        decision = self.agent.make_decision(signals, self.market_data, current_position="BUY")
+        self.assertEqual(decision.action, "EXIT")
+        self.assertIn("Exit: AO cross to negative", decision.reasoning)
+
+    def test_exit_on_opposite_fractal_breakout(self):
+        """Exit triggered by opposite fractal breakout (SELL) when in BUY position."""
+        signals = [
+            Signal(
+                timestamp=datetime.now(),
+                type="SELL",
+                confidence=0.9,
+                details={"indicator": "fractal", "breakout": True, "fractal_high": 104.0},
+            )
+        ]
+        decision = self.agent.make_decision(signals, self.market_data, current_position="BUY")
+        self.assertEqual(decision.action, "EXIT")
+        self.assertIn("Exit: Opposite fractal breakout (SELL)", decision.reasoning)
     def test_alligator_awake_allows_trade(self):
         """Trade allowed when Alligator is awake."""
         signals = [

@@ -38,3 +38,4 @@ class TradingDecision(BaseModel):
     timestamp: datetime
     entry_price: Optional[float] = None
     stop_loss: Optional[float] = None
+    position_size: Optional[float] = None  # Reverse pyramiding position size

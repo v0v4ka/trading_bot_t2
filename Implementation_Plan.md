@@ -7,7 +7,7 @@ Development of a backtest mode MVP for an AI multi-agent trading bot system focu
 
 ## 🚀 **PROJECT STATUS UPDATE** - July 17, 2025
 
-### **Current Status: Phase 2 Complete (75%) - Ready for Task 2.4**
+### **Current Status: Phase 2 Complete (75%) - Bill Williams Market Entry Logic Review Complete**
 
 **✅ COMPLETED TASKS:**
 - **Phase 1**: 100% Complete (Tasks 1.1, 1.2, 1.3)
@@ -18,6 +18,10 @@ Development of a backtest mode MVP for an AI multi-agent trading bot system focu
 - **Test Coverage**: 55 tests, 100% passing
 - **Code Quality**: Mypy clean, Black formatted, PEP 8 compliant
 - **Git Status**: All changes committed to main branch (`1a3477b`)
+
+**Bill Williams Market Entry Logic Review:**
+- Current implementation covers Fractals, Alligator, AO, and basic confluence.
+- Gaps identified: No explicit staged Three Wise Men entry logic, AO saucer, Alligator "awake/sleeping" filter, reverse pyramiding, and full exit logic.
 
 **🎯 NEXT PRIORITY: Task 3.1 - Backtesting Framework**
 - **Status**: Ready to start (core agents complete - risk assessment deferred)
@@ -93,6 +97,27 @@ Development of a backtest mode MVP for an AI multi-agent trading bot system focu
 **Deliverables:** ✅ `agents/decision_maker_agent.py`  
 **Acceptance Criteria:** ✅ Robust decision making based on signal confluence with clear reasoning
 
+---
+
+## Bill Williams Market Entry Logic Compliance Tasks (Phase 3.5)
+
+**Objective:** Achieve full compliance with Bill Williams Trading Chaos market entry logic.
+
+**Tasks:**
+- [ ] Implement explicit Three Wise Men staged entry logic:
+    - [ ] First Wise Man: Detect reversal bar outside Alligator’s mouth, confirmed by AO color.
+    - [ ] Second Wise Man: Detect AO saucer pattern for add-on entry.
+    - [ ] Third Wise Man: Detect fractal breakout for further add-on.
+- [ ] Add Alligator “awake/sleeping” state detection and filter trades accordingly.
+- [ ] Implement reverse pyramiding (decreasing position size for add-ons).
+- [ ] Update stop loss logic: place initial stop below/above reversal bar, use trailing stops for add-ons.
+- [ ] Refine exit logic: exit on opposite reversal bar, AO cross, or opposite fractal.
+- [ ] Update tests to cover all new logic and edge cases.
+- [ ] Update documentation to reflect new, fully Bill Williams-compliant entry/exit logic.
+
+**Deliverables:** Updated `agents/decision_maker_agent.py`, new/updated tests, documentation
+**Acceptance Criteria:** Full compliance with Bill Williams Trading Chaos entry/exit methodology
+
 ### Task 2.4: Risk Assessment Agent ⏳ **DEFERRED TO PHASE 4**
 - ⏸️ Implement basic position sizing calculations (moved to Phase 4)
 - ⏸️ Create simple risk evaluation metrics (moved to Phase 4)
@@ -106,43 +131,61 @@ Development of a backtest mode MVP for an AI multi-agent trading bot system focu
 **Timeline:** Weeks 5-6
 **Dependencies:** ✅ Core agents complete (Signal Detection + Decision Maker)
 **Status:** 🟡 **Ready to start Task 3.1**
+**Note:** Task 3.2 (Agent Decision Logging System) was completed early and is now marked as complete below.
+
+---
+
+## Future Tasks & Extensibility
+
+- **Phase 4:**
+    - Risk Assessment Agent Implementation (position sizing, risk metrics, stop-loss logic)
+    - System Integration and end-to-end workflow testing
+    - Comprehensive testing and performance benchmarking
+    - Documentation and user guide updates
+- **Planned Enhancements:**
+    - Elliott Wave analysis agent
+    - Vector memory system integration
+    - Order execution logic
+    - Multi-timeframe analysis
+    - Advanced visualization features
+    - Enhanced risk management
+    - Real-time data feeds
+    - Portfolio management and analytics
 
 ### Task 3.1: Backtesting Framework ⏳ **IMMEDIATE PRIORITY**
-- ⏳ Create backtesting engine for historical data processing
-- ⏳ Implement trade simulation without order execution
-- ⏳ Add performance metrics calculation
-- ⏳ Create backtesting configuration system
-- ⏳ Integration with existing Signal Detection and Decision Maker agents
-**Deliverables:** `backtesting/engine.py`, `backtesting/metrics.py`
-**Acceptance Criteria:** Accurate historical trade simulation with performance tracking
+✅ **COMPLETED**
+- Created comprehensive backtesting engine for historical data processing and trade simulation.
+- Implemented performance metrics calculation and configuration system.
+- Integrated with Signal Detection and Decision Maker agents.
+- All 51 backtesting tests passing; integration example and documentation provided.
+**Deliverables:** `backtesting/engine.py`, `backtesting/metrics.py`, `backtesting/config.py`, test suite, integration example
+**Acceptance Criteria:** Accurate historical trade simulation with performance tracking and comprehensive metrics.
 
 ### Task 3.2: Agent Decision Logging System
-- Implement structured decision logging per agent
-- Create optional verbose mode for full reasoning chains
-- Add decision history tracking with timestamps
-- Implement log analysis utilities
-- Focus on Signal Detection and Decision Maker agent logging
+✅ **COMPLETED**
+- Implemented structured decision logging per agent
+- Created optional verbose mode for full reasoning chains
+- Added decision history tracking with timestamps
+- Implemented log analysis utilities
+- Focused on Signal Detection and Decision Maker agent logging
 **Deliverables:** `logging/decision_logger.py`
 **Acceptance Criteria:** Comprehensive decision tracking with structured output and detailed reasoning chains
 
 ### Task 3.3: Integrated Visualization System (Enhanced)
-- **Primary Focus:** Combined candlestick charts with entry point decisions on the same graph
-- Implement candlestick chart visualization with matplotlib
-- Add Bill Williams indicators overlay (Fractals, Alligator, AO)
-- **Key Feature:** Detailed entry point annotations directly on candlestick charts
-- Color-coded decision points with agent reasoning annotations
-- Multi-layer visualization: candlesticks + indicators + decision points
-- Implement chart configuration options and zoom capabilities
-**Deliverables:** `visualization/charts.py`
-**Acceptance Criteria:** Clear integrated visualization showing candlesticks, indicators, and entry/exit decisions on single comprehensive graph
+✅ **COMPLETED**
+- Implemented multi-layer integrated visualization system with candlestick charts, Bill Williams indicators, agent decision overlays, and backtesting results.
+- CLI integration and chart export functionality verified.
+- All 36 visualization tests passing; multiple themes and configuration options validated.
+**Deliverables:** `visualization/charts.py`, `visualization/config.py`, test suite, CLI integration
+**Acceptance Criteria:** Comprehensive visualization with candlesticks, indicators, entry/exit decisions, and agent reasoning annotations.
 
 ### Task 3.4: Command Line Interface
-- Create CLI for symbol and timeframe selection
-- Implement backtesting configuration options
-- Add visualization output options
-- Create help and usage documentation
-**Deliverables:** `cli/main.py`
-**Acceptance Criteria:** User-friendly CLI with comprehensive options for backtesting and visualization
+✅ **COMPLETED**
+- Created CLI entry point (`src/cli/main.py`) with subcommands for config, data, version, backtest, visualize, analyze, and logs.
+- Added configuration utilities, helpers, and unit tests for argument parsing, data fetch, and config loading.
+- Documented CLI usage examples in `README.md`.
+**Deliverables:** `cli/main.py`, `cli/config.py`, `cli/utils.py`, test suite, documentation
+**Acceptance Criteria:** Fully functional, user-friendly CLI with comprehensive options for backtesting, visualization, and configuration management.
 
 ## Phase 4: Integration, Testing & Risk Management
 **Timeline:** Week 7

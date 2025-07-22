@@ -17,7 +17,7 @@ from ..agents.schemas import Signal, TradingDecision
 from ..agents.signal_detection_agent import SignalDetectionAgent
 from ..data.data_provider import DataProvider
 from ..data.models import OHLCV
-from ..logging.decision_logger import DecisionLogger
+from ..decision_logging.decision_logger import DecisionLogger
 from .config import BacktestConfig
 from .metrics import BacktestResults, PerformanceAnalyzer, Trade
 

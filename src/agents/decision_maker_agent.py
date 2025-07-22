@@ -18,6 +18,38 @@ logger = logging.getLogger("trading_bot.decision_maker")
 
 
 class DecisionMakerAgent(BaseAgent):
+    def detect_exit_signal(self, signals: List[Signal], current_action: str) -> Optional[str]:
+        """
+        Detect exit signals based on Bill Williams criteria:
+        - Opposite reversal bar (outside Alligator's mouth, opposite direction)
+        - AO cross (zero-line crossing, opposite direction)
+        - Opposite fractal breakout
+        Returns exit reason string if exit condition is met, else None.
+        """
+        # Opposite reversal bar
+        for s in signals:
+            if s.details.get('indicator') == 'alligator' and s.details.get('outside_mouth', False):
+                # If current action is BUY, look for SELL reversal bar
+                if current_action.startswith('BUY') and s.type == 'SELL':
+                    return 'Exit: Opposite reversal bar (SELL)'
+                elif current_action.startswith('SELL') and s.type == 'BUY':
+                    return 'Exit: Opposite reversal bar (BUY)'
+        # AO cross
+        for s in signals:
+            if s.details.get('indicator') == 'ao' and s.details.get('zero_cross', False):
+                # If current action is BUY, look for AO cross to negative
+                if current_action.startswith('BUY') and s.details.get('ao_value', 0) < 0:
+                    return 'Exit: AO cross to negative'
+                elif current_action.startswith('SELL') and s.details.get('ao_value', 0) > 0:
+                    return 'Exit: AO cross to positive'
+        # Opposite fractal breakout
+        for s in signals:
+            if s.details.get('indicator') == 'fractal' and s.details.get('breakout', False):
+                if current_action.startswith('BUY') and s.type == 'SELL':
+                    return 'Exit: Opposite fractal breakout (SELL)'
+                elif current_action.startswith('SELL') and s.type == 'BUY':
+                    return 'Exit: Opposite fractal breakout (BUY)'
+        return None
     def calculate_position_size(self, staged_action: str) -> float:
         """
         Calculate position size based on staged entry (reverse pyramiding).
@@ -112,7 +144,7 @@ class DecisionMakerAgent(BaseAgent):
         self.confluence_threshold = confluence_threshold
 
     def make_decision(
-        self, signals: List[Signal], market_data: OHLCV
+        self, signals: List[Signal], market_data: OHLCV, current_position: Optional[str] = None
     ) -> TradingDecision:
         """
         Make a trading decision based on signals and market data.
@@ -184,6 +216,14 @@ class DecisionMakerAgent(BaseAgent):
             # If state unknown, allow staged entry or confluence logic
             action = staged_action if staged_action else self.determine_action(confluence_score, signals)
 
+        # Refined exit logic: check for exit signals if in a position
+        exit_reason = None
+        position_to_check = current_position if current_position else action
+        if position_to_check in ['BUY', 'BUY_ADDON', 'BUY_ADDON2', 'SELL', 'SELL_ADDON', 'SELL_ADDON2']:
+            exit_reason = self.detect_exit_signal(signals, position_to_check)
+            if exit_reason:
+                action = 'EXIT'
+
         # Calculate confidence score
         confidence = self.calculate_confidence(confluence_score, signals)
 
@@ -192,6 +232,8 @@ class DecisionMakerAgent(BaseAgent):
         if staged_reason:
             reasoning += ' | Staged Entry: ' + ', '.join(staged_reason)
         reasoning += f' | Alligator state: {alligator_state}'
+        if exit_reason:
+            reasoning += f' | {exit_reason}'
 
         # Create decision
         decision = TradingDecision(
@@ -200,13 +242,13 @@ class DecisionMakerAgent(BaseAgent):
             reasoning=reasoning,
             signals_used=signals,
             timestamp=datetime.now(),
-            entry_price=market_data.close if action != "HOLD" else None,
+            entry_price=market_data.close if action not in ["HOLD", "EXIT"] else None,
             stop_loss=(
                 self.calculate_stop_loss(market_data, action)
-                if action != "HOLD"
+                if action not in ["HOLD", "EXIT"]
                 else None
             ),
-            position_size=position_size if action != "HOLD" else None,
+            position_size=position_size if action not in ["HOLD", "EXIT"] else None,
         )
 
         # Log the decision

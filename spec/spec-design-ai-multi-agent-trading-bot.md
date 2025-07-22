@@ -67,7 +67,14 @@ The specification covers:
 
 ### Functional Requirements
 
-- **REQ-001**: Implement Bill Williams' Trading Chaos theory on daily bars
+- **REQ-001**: Implement Bill Williams' Complete Trading Chaos Entry Method with all five indicators
+- **REQ-001.1**: Implement Alligator indicator (Jaw=13-SMA, Teeth=8-SMA, Lips=5-SMA) as primary trend filter
+- **REQ-001.2**: Implement Fractal detection with Alligator position validation
+- **REQ-001.3**: Implement Awesome Oscillator (AO) momentum confirmation
+- **REQ-001.4**: Implement Accelerator/Decelerator (AC) indicator for acceleration analysis
+- **REQ-001.5**: Implement Market Facilitation Index (MFI) for volume validation
+- **REQ-001.6**: Implement complete entry logic: Alligator awakening + Fractal + AO + AC + MFI confluence
+- **REQ-001.7**: Implement Alligator "sleeping" detection to prevent trading during consolidation
 - **REQ-002**: Support all equity symbols available through Alpaca API
 - **REQ-003**: Execute market orders with stop-loss based on opposite fractal levels
 - **REQ-004**: Replace pending orders when better entry opportunities are detected
@@ -77,7 +84,7 @@ The specification covers:
 - **REQ-008**: Integrate Elliott Wave analysis from 4H and 1W timeframes via Macro Agent
 - **REQ-009**: Implement Decision Maker Agent for final trade execution decisions
 - **REQ-010**: Provide real-time backtesting and simulation capabilities
-- **REQ-011**: Generate annotated candlestick charts with decision markers
+- **REQ-011**: Generate annotated candlestick charts with decision markers and all Bill Williams indicators
 - **REQ-012**: Maintain persistent CSV logs with UUID tracking
 - **REQ-013**: Implement CLI interface with configuration management
 - **REQ-014**: Support both live trading and paper trading modes
@@ -87,7 +94,7 @@ The specification covers:
 - **REQ-018**: Integrate reviewer feedback into future trading decisions for continuous improvement
 - **REQ-019**: Implement multi-agent debate system for decision validation and refinement
 - **REQ-020**: Implement reflection system for post-trade analysis and memory updates
-- **REQ-021**: Implement technical indicators (AO, fractals, alligator, ATR) using standard Python libraries (numpy, pandas) without external TA libraries
+- **REQ-021**: Implement all Bill Williams technical indicators using standard Python libraries (numpy, pandas)
 - **REQ-022**: Prioritize usage of existing, well-maintained libraries over custom implementation to reduce development time and leverage proven solutions
 
 ### Security Requirements
@@ -660,7 +667,341 @@ for symbol in ["AAPL", "MSFT", "GOOGL"]:
 - **VAL-026**: Multiple positions per symbol must comply with broker-specific regulations
 - **VAL-027**: Trading API abstraction must ensure regulatory compliance across all brokers
 
-## 11. Related Specifications / Further Reading
+## 12. Bill Williams Complete Entry Method - Implementation Tasks
+
+### Phase 1: Core Indicators Implementation
+
+#### Task BW-001: Alligator Indicator Enhancement
+**Current State**: Basic implementation exists
+**Required Enhancement**:
+```python
+class AlligatorIndicator:
+    def __init__(self, df: pd.DataFrame):
+        self.df = df
+        
+    def calculate(self) -> Dict[str, pd.Series]:
+        median_price = (self.df['High'] + self.df['Low']) / 2
+        
+        # Bill Williams Alligator with forward shift
+        jaw = median_price.rolling(13).mean().shift(8)    # Blue line (13-SMA shifted 8 bars)
+        teeth = median_price.rolling(8).mean().shift(5)   # Red line (8-SMA shifted 5 bars) 
+        lips = median_price.rolling(5).mean().shift(3)    # Green line (5-SMA shifted 3 bars)
+        
+        return {
+            'jaw': jaw,
+            'teeth': teeth, 
+            'lips': lips,
+            'state': self._determine_alligator_state(jaw, teeth, lips)
+        }
+    
+    def _determine_alligator_state(self, jaw, teeth, lips) -> pd.Series:
+        """Determine if Alligator is sleeping, awakening, eating, or satisfied"""
+        # Implementation for state detection
+        pass
+        
+    def is_sleeping(self, idx: int) -> bool:
+        """Check if Alligator lines are intertwined (consolidation)"""
+        pass
+        
+    def is_bullish_alignment(self, idx: int) -> bool:
+        """Check if Lips > Teeth > Jaw (bullish trend)"""
+        pass
+```
+
+#### Task BW-002: Accelerator/Decelerator (AC) Indicator
+**New Implementation Required**:
+```python
+class AcceleratorDeceleratorIndicator:
+    def __init__(self, df: pd.DataFrame):
+        self.df = df
+        
+    def calculate(self) -> pd.Series:
+        """AC = AO - SMA(AO, 5)"""
+        ao = AwesomeOscillatorIndicator(self.df).calculate()
+        ac = ao - ao.rolling(5).mean()
+        return ac
+    
+    def get_signal_type(self, idx: int) -> str:
+        """Determine AC signal: accelerating_up, accelerating_down, decelerating"""
+        pass
+```
+
+#### Task BW-003: Market Facilitation Index (MFI) Indicator  
+**New Implementation Required**:
+```python
+class MarketFacilitationIndexIndicator:
+    def __init__(self, df: pd.DataFrame):
+        self.df = df
+        
+    def calculate(self) -> Dict[str, pd.Series]:
+        """MFI = (High - Low) / Volume"""
+        mfi = (self.df['High'] - self.df['Low']) / self.df['Volume']
+        
+        return {
+            'mfi': mfi,
+            'squat_bars': self._detect_squat_bars(mfi),
+            'fade_bars': self._detect_fade_bars(mfi), 
+            'fake_bars': self._detect_fake_bars(mfi),
+            'green_bars': self._detect_green_bars(mfi)
+        }
+    
+    def _detect_green_bars(self, mfi: pd.Series) -> pd.Series:
+        """Both MFI and Volume increasing (bullish)"""
+        pass
+```
+
+### Phase 2: Enhanced Signal Detection
+
+#### Task BW-004: Complete Bill Williams Entry Logic
+**Enhancement to SignalDetectionAgent**:
+```python
+class BillWilliamsSignalDetector:
+    def __init__(self, df: pd.DataFrame):
+        self.df = df
+        self.alligator = AlligatorIndicator(df)
+        self.fractals = FractalIndicator(df)
+        self.ao = AwesomeOscillatorIndicator(df)
+        self.ac = AcceleratorDeceleratorIndicator(df)
+        self.mfi = MarketFacilitationIndexIndicator(df)
+        
+    def detect_complete_signals(self) -> List[Dict]:
+        """Implement Bill Williams' complete entry method"""
+        alligator_data = self.alligator.calculate()
+        fractals = self.fractals.calculate()
+        ao_data = self.ao.calculate()
+        ac_data = self.ac.calculate()
+        mfi_data = self.mfi.calculate()
+        
+        signals = []
+        
+        for fractal in fractals:
+            idx = self.df.index.get_loc(fractal['timestamp'])
+            
+            # Step 1: Check if Alligator is awake (not sleeping)
+            if self.alligator.is_sleeping(idx):
+                continue  # Skip - market in consolidation
+                
+            # Step 2: Validate fractal position relative to Alligator
+            if not self._is_fractal_valid_with_alligator(fractal, alligator_data, idx):
+                continue
+                
+            # Step 3: Check momentum confirmation (AO)
+            if not self._is_ao_aligned(fractal, ao_data, idx):
+                continue
+                
+            # Step 4: Check acceleration (AC)  
+            if not self._is_ac_supporting(fractal, ac_data, idx):
+                continue
+                
+            # Step 5: Check volume validation (MFI)
+            if not self._is_mfi_supporting(fractal, mfi_data, idx):
+                continue
+                
+            # All conditions met - generate signal
+            signal = self._create_complete_signal(fractal, idx, {
+                'alligator': alligator_data,
+                'ao': ao_data,
+                'ac': ac_data,
+                'mfi': mfi_data
+            })
+            signals.append(signal)
+            
+        return signals
+```
+
+#### Task BW-005: Bill Williams Entry Rules Implementation
+**Detailed Entry Logic**:
+```python
+def _is_fractal_valid_with_alligator(self, fractal: Dict, alligator: Dict, idx: int) -> bool:
+    """
+    Bill Williams Rule: 
+    - Up fractal must be above Alligator's teeth for buy signal
+    - Down fractal must be below Alligator's teeth for sell signal
+    """
+    teeth_value = alligator['teeth'].iloc[idx]
+    fractal_price = fractal['price']
+    
+    if fractal['type'] == 'up':
+        return fractal_price > teeth_value
+    elif fractal['type'] == 'down':
+        return fractal_price < teeth_value
+    
+    return False
+
+def _is_ao_aligned(self, fractal: Dict, ao: pd.Series, idx: int) -> bool:
+    """
+    Bill Williams Rule:
+    - Up fractal + AO > 0 = Buy signal
+    - Down fractal + AO < 0 = Sell signal
+    """
+    ao_value = ao.iloc[idx]
+    
+    if pd.isna(ao_value):
+        return False
+        
+    if fractal['type'] == 'up':
+        return ao_value > 0
+    elif fractal['type'] == 'down':
+        return ao_value < 0
+        
+    return False
+
+def _is_ac_supporting(self, fractal: Dict, ac: pd.Series, idx: int) -> bool:
+    """
+    Bill Williams Rule:
+    - AC should support the momentum direction
+    """
+    if idx < 2:  # Need history for AC analysis
+        return False
+        
+    current_ac = ac.iloc[idx]
+    previous_ac = ac.iloc[idx-1]
+    
+    if pd.isna(current_ac) or pd.isna(previous_ac):
+        return False
+        
+    if fractal['type'] == 'up':
+        # For buy signals, AC should be accelerating up or at least not strongly decelerating
+        return current_ac >= previous_ac or current_ac > -0.1
+    elif fractal['type'] == 'down':
+        # For sell signals, AC should be accelerating down or at least not strongly accelerating up
+        return current_ac <= previous_ac or current_ac < 0.1
+        
+    return False
+
+def _is_mfi_supporting(self, fractal: Dict, mfi: Dict, idx: int) -> bool:
+    """
+    Bill Williams Rule:
+    - Green bars (increasing MFI + increasing Volume) support the signal
+    - Avoid squat bars (decreasing MFI + decreasing Volume)
+    """
+    if idx < 1:  # Need previous bar for comparison
+        return False
+        
+    current_mfi = mfi['mfi'].iloc[idx]
+    previous_mfi = mfi['mfi'].iloc[idx-1]
+    current_volume = self.df['Volume'].iloc[idx]
+    previous_volume = self.df['Volume'].iloc[idx-1]
+    
+    if pd.isna(current_mfi) or pd.isna(previous_mfi):
+        return False
+        
+    # Green bar: both MFI and Volume increasing
+    is_green_bar = (current_mfi > previous_mfi) and (current_volume > previous_volume)
+    
+    # Squat bar: both MFI and Volume decreasing (avoid these)
+    is_squat_bar = (current_mfi < previous_mfi) and (current_volume < previous_volume)
+    
+    # Accept green bars, neutral on fade/fake bars, reject squat bars
+    return is_green_bar or not is_squat_bar
+```
+
+### Phase 3: Enhanced Visualization
+
+#### Task BW-006: Complete Bill Williams Chart Visualization
+**Enhancement to ChartVisualizer**:
+```python
+class BillWilliamsChartVisualizer:
+    def create_complete_chart(self, df: pd.DataFrame, signals: List[Dict]) -> str:
+        """Generate chart with all Bill Williams indicators"""
+        
+        fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(16, 20), 
+                                                gridspec_kw={'height_ratios': [3, 1, 1, 1]})
+        
+        # Main price chart with Alligator and Fractals
+        self._plot_price_and_alligator(ax1, df)
+        self._plot_fractals(ax1, df, signals)
+        
+        # Awesome Oscillator
+        self._plot_ao(ax2, df)
+        
+        # Accelerator/Decelerator  
+        self._plot_ac(ax3, df)
+        
+        # Market Facilitation Index
+        self._plot_mfi(ax4, df)
+        
+        # Mark complete Bill Williams signals
+        self._mark_complete_signals(ax1, signals)
+        
+        return self._save_chart(fig)
+```
+
+### Phase 4: Testing and Validation
+
+#### Task BW-007: Bill Williams Indicator Unit Tests
+```python
+class TestBillWilliamsIndicators:
+    def test_alligator_calculation(self):
+        """Test Alligator SMA calculations and shifts"""
+        pass
+        
+    def test_alligator_state_detection(self):
+        """Test sleeping/awake/eating state detection"""  
+        pass
+        
+    def test_ac_calculation(self):
+        """Test AC = AO - SMA(AO, 5) calculation"""
+        pass
+        
+    def test_mfi_calculation(self):
+        """Test MFI = (High-Low)/Volume calculation"""
+        pass
+        
+    def test_complete_entry_logic(self):
+        """Test full Bill Williams entry method"""
+        pass
+```
+
+#### Task BW-008: Integration Tests
+```python
+class TestBillWilliamsIntegration:
+    def test_complete_signal_generation(self):
+        """Test end-to-end signal generation with all 5 indicators"""
+        pass
+        
+    def test_alligator_filtering(self):
+        """Test that signals are filtered when Alligator is sleeping"""
+        pass
+        
+    def test_confluence_requirements(self):
+        """Test that all 5 indicators must align for signal generation"""
+        pass
+```
+
+### Phase 5: Performance Optimization
+
+#### Task BW-009: Indicator Calculation Optimization
+- **Vectorized calculations** for all indicators using pandas/numpy
+- **Caching mechanisms** for expensive calculations  
+- **Memory optimization** for large datasets
+- **Parallel processing** for multi-symbol analysis
+
+#### Task BW-010: Signal Quality Metrics
+```python
+class BillWilliamsMetrics:
+    def calculate_signal_quality(self, signals: List[Dict]) -> Dict:
+        return {
+            'confluence_score': self._calculate_confluence_strength(signals),
+            'alligator_trend_strength': self._measure_trend_strength(signals),
+            'momentum_alignment': self._measure_momentum_quality(signals),
+            'volume_support': self._measure_volume_quality(signals)
+        }
+```
+
+### Implementation Priority
+
+1. **Phase 1**: Complete indicators (2-3 days)
+2. **Phase 2**: Enhanced signal detection (2-3 days)  
+3. **Phase 3**: Visualization updates (1-2 days)
+4. **Phase 4**: Testing and validation (2-3 days)
+5. **Phase 5**: Performance optimization (1-2 days)
+
+**Total Estimated Time**: 8-13 days for complete Bill Williams implementation
+
+This enhancement will transform the current simplified fractal + AO approach into a robust, complete Bill Williams Trading Chaos system with all five indicators working in confluence for high-quality trade signals.
+
+## 13. Related Specifications / Further Reading
 
 ### Internal Documentation
 - [Event-Driven Architecture Design](../docs/event_driven_architecture_design.md)

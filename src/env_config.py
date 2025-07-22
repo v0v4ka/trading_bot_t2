@@ -104,6 +104,23 @@ class TradingBotConfig:
         self.log_level = get_env_var("TBOT_LOG_LEVEL", "INFO")
         self.log_file = get_env_var("TBOT_LOG_FILE", "logs/trading_bot.log")
 
+        # Detailed Logging Configuration
+        self.log_level_global = get_env_var("LOG_LEVEL", "INFO")
+        self.log_format = get_env_var(
+            "LOG_FORMAT", "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
+        self.log_to_console = get_env_var("LOG_TO_CONSOLE", True, bool)
+        self.log_to_file = get_env_var("LOG_TO_FILE", True, bool)
+        self.log_file_max_size = get_env_var("LOG_FILE_MAX_SIZE", 10485760, int)  # 10MB
+        self.log_file_backup_count = get_env_var("LOG_FILE_BACKUP_COUNT", 5, int)
+        
+        # Module-specific Log Levels
+        self.log_level_backtesting = get_env_var("LOG_LEVEL_BACKTESTING", "INFO")
+        self.log_level_agents = get_env_var("LOG_LEVEL_AGENTS", "INFO") 
+        self.log_level_data = get_env_var("LOG_LEVEL_DATA", "WARNING")
+        self.log_level_visualization = get_env_var("LOG_LEVEL_VISUALIZATION", "WARNING")
+        self.log_level_cli = get_env_var("LOG_LEVEL_CLI", "INFO")
+
         # Backtesting Configuration
         self.default_initial_capital = get_env_var(
             "DEFAULT_INITIAL_CAPITAL", 10000.0, float
@@ -307,6 +324,100 @@ class TradingBotConfig:
             errors.append("DEFAULT_INITIAL_CAPITAL must be positive")
 
         return errors
+
+    def setup_logging(self) -> None:
+        """
+        Setup logging configuration based on environment variables.
+        
+        This method configures:
+        - Root logger level
+        - Console and file handlers
+        - Module-specific log levels
+        - Log formatting and rotation
+        """
+        import logging
+        import logging.handlers
+        import sys
+        from pathlib import Path
+        
+        # Create logs directory if it doesn't exist
+        logs_dir = Path(self.logs_dir)
+        logs_dir.mkdir(exist_ok=True, parents=True)
+        
+        # Configure root logger
+        root_logger = logging.getLogger()
+        root_logger.setLevel(getattr(logging, self.log_level_global.upper(), logging.INFO))
+        
+        # Clear any existing handlers
+        root_logger.handlers.clear()
+        
+        # Create formatter
+        formatter = logging.Formatter(self.log_format)
+        
+        # Console handler
+        if self.log_to_console:
+            console_handler = logging.StreamHandler(sys.stdout)
+            console_handler.setFormatter(formatter)
+            console_handler.setLevel(getattr(logging, self.log_level_global.upper(), logging.INFO))
+            root_logger.addHandler(console_handler)
+        
+        # File handler with rotation
+        if self.log_to_file:
+            log_file_path = logs_dir / Path(self.log_file).name
+            file_handler = logging.handlers.RotatingFileHandler(
+                log_file_path,
+                maxBytes=self.log_file_max_size,
+                backupCount=self.log_file_backup_count
+            )
+            file_handler.setFormatter(formatter)
+            file_handler.setLevel(getattr(logging, self.log_level_global.upper(), logging.INFO))
+            root_logger.addHandler(file_handler)
+        
+        # Configure module-specific loggers
+        self._configure_module_loggers()
+        
+    def _configure_module_loggers(self) -> None:
+        """Configure log levels for specific modules."""
+        import logging
+        
+        # Map of module names to their configured log levels
+        module_configs = {
+            "trading_bot.backtesting": self.log_level_backtesting,
+            "trading_bot.backtesting.engine": self.log_level_backtesting,
+            "trading_bot.agents": self.log_level_agents,
+            "trading_bot.agents.signal_detection_agent": self.log_level_agents,
+            "trading_bot.agents.decision_maker_agent": self.log_level_agents,
+            "trading_bot.data": self.log_level_data,
+            "trading_bot.data.data_provider": self.log_level_data,
+            "trading_bot.visualization": self.log_level_visualization,
+            "trading_bot.visualization.charts": self.log_level_visualization,
+            "trading_bot.cli": self.log_level_cli,
+        }
+        
+        for module_name, level_str in module_configs.items():
+            logger = logging.getLogger(module_name)
+            level = getattr(logging, level_str.upper(), logging.INFO)
+            logger.setLevel(level)
+            
+    def get_logging_status(self) -> Dict[str, Any]:
+        """Get current logging configuration status."""
+        import logging
+        
+        return {
+            "global_level": self.log_level_global,
+            "console_enabled": self.log_to_console,
+            "file_enabled": self.log_to_file,
+            "log_file": self.log_file,
+            "module_levels": {
+                "backtesting": self.log_level_backtesting,
+                "agents": self.log_level_agents,
+                "data": self.log_level_data,
+                "visualization": self.log_level_visualization,
+                "cli": self.log_level_cli,
+            },
+            "root_logger_level": logging.getLevelName(logging.getLogger().getEffectiveLevel()),
+            "handlers_count": len(logging.getLogger().handlers),
+        }
 
 
 # Global configuration instance

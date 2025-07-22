@@ -12,6 +12,7 @@ from src.backtesting.config import BacktestConfig
 from src.backtesting.engine import BacktestEngine
 from src.cli.config import load_config, validate_config
 from src.data.data_provider import DataProvider
+from src.env_config import config as env_config
 from src.visualization.charts import ChartVisualizer, create_quick_chart
 from src.visualization.config import BACKTESTING_CONFIG, PRESENTATION_CONFIG, ChartTheme
 
@@ -68,11 +69,89 @@ def build_parser() -> argparse.ArgumentParser:
 
     analyze_parser = subparsers.add_parser("analyze", help="Analysis placeholder")
     logs_parser = subparsers.add_parser("logs", help="Show decision logs")
+    
+    # Add logging command
+    logging_parser = subparsers.add_parser("logging", help="Logging configuration and test")
+    logging_parser.add_argument(
+        "--status", action="store_true", help="Show current logging configuration"
+    )
+    logging_parser.add_argument(
+        "--test", action="store_true", help="Test logging with sample messages"
+    )
+    logging_parser.add_argument(
+        "--level", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        help="Set temporary log level for testing"
+    )
 
     return parser
 
 
+def handle_logging_command(args) -> None:
+    """Handle logging configuration commands."""
+    import logging
+    import json
+    
+    if args.status:
+        print("🔧 Current Logging Configuration:")
+        print("=" * 50)
+        
+        status = env_config.get_logging_status()
+        print(f"Global Level: {status['global_level']}")
+        print(f"Console Output: {status['console_enabled']}")
+        print(f"File Output: {status['file_enabled']}")
+        print(f"Log File: {status['log_file']}")
+        print(f"Root Logger Level: {status['root_logger_level']}")
+        print(f"Active Handlers: {status['handlers_count']}")
+        
+        print("\nModule-specific Levels:")
+        for module, level in status['module_levels'].items():
+            print(f"  {module}: {level}")
+        
+        return
+    
+    if args.test:
+        print("🧪 Testing Logging Configuration:")
+        print("=" * 50)
+        
+        # Set temporary level if provided
+        if args.level:
+            root_logger = logging.getLogger()
+            old_level = root_logger.level
+            root_logger.setLevel(getattr(logging, args.level.upper()))
+            print(f"Temporarily set log level to {args.level}")
+        
+        # Test different loggers and levels
+        loggers_to_test = [
+            ("trading_bot.backtesting.engine", "Backtesting Engine"),
+            ("trading_bot.agents", "Agents"),
+            ("trading_bot.data", "Data Provider"),
+            ("trading_bot.cli", "CLI"),
+        ]
+        
+        for logger_name, display_name in loggers_to_test:
+            logger = logging.getLogger(logger_name)
+            print(f"\n📋 Testing {display_name} Logger ({logger_name}):")
+            logger.debug(f"DEBUG message from {display_name}")
+            logger.info(f"INFO message from {display_name}")
+            logger.warning(f"WARNING message from {display_name}")
+            logger.error(f"ERROR message from {display_name}")
+        
+        # Restore level if changed
+        if args.level:
+            root_logger.setLevel(old_level)
+            print(f"\nRestored log level to {logging.getLevelName(old_level)}")
+        
+        print("\n✅ Logging test completed!")
+        return
+    
+    # Default: show status
+    handle_logging_command(type('Args', (), {'status': True, 'test': False, 'level': None})())
+
+
 def main(argv: List[str] | None = None) -> None:
+    # Setup logging first, before any other operations
+    env_config.setup_logging()
+    
     parser = build_parser()
     args = parser.parse_args(argv)
 
@@ -91,6 +170,10 @@ def main(argv: List[str] | None = None) -> None:
             print("Configuration loaded")
         return
 
+    if args.command == "logging":
+        handle_logging_command(args)
+        return
+
     if args.command == "data":
         provider = DataProvider(
             symbol=args.symbol,
@@ -104,9 +187,6 @@ def main(argv: List[str] | None = None) -> None:
 
     if args.command == "backtest":
         print("Running backtesting...")
-
-        # Set test mode for synthetic data
-        os.environ["TBOT_TEST_MODE"] = "1"
 
         # Create configuration
         start_date = datetime.now() - timedelta(days=args.days)
@@ -156,9 +236,6 @@ def main(argv: List[str] | None = None) -> None:
 
     if args.command == "visualize":
         print(f"Creating chart for {args.symbol}...")
-
-        # Set test mode for synthetic data
-        os.environ["TBOT_TEST_MODE"] = "1"
 
         # Determine output path
         if args.output:

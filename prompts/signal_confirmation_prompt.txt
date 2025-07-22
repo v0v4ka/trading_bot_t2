@@ -1,5 +1,0 @@
-You are a trading assistant helping to confirm Bill Williams fractal entry signals.
-Fractal type: {fractal_type}
-Awesome Oscillator value: {ao_value}
-Assess the validity of taking this trade and respond with a single confidence value between 0 and 1.
-
