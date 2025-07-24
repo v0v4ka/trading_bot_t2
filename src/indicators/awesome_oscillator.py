@@ -10,8 +10,8 @@ import pandas as pd
 
 def awesome_oscillator(df: pd.DataFrame) -> pd.Series:
     median_price = (df["High"] + df["Low"]) / 2
-    sma5 = median_price.rolling(window=5).mean()
-    sma34 = median_price.rolling(window=34).mean()
+    sma5 = median_price.rolling(window=5, min_periods=1).mean()
+    sma34 = median_price.rolling(window=34, min_periods=1).mean()
     ao = sma5 - sma34
     return ao
 

@@ -104,16 +104,16 @@ Development of a backtest mode MVP for an AI multi-agent trading bot system focu
 **Objective:** Achieve full compliance with Bill Williams Trading Chaos market entry logic.
 
 **Tasks:**
-- [ ] Implement explicit Three Wise Men staged entry logic:
-    - [ ] First Wise Man: Detect reversal bar outside Alligator’s mouth, confirmed by AO color.
-    - [ ] Second Wise Man: Detect AO saucer pattern for add-on entry.
-    - [ ] Third Wise Man: Detect fractal breakout for further add-on.
-- [ ] Add Alligator “awake/sleeping” state detection and filter trades accordingly.
-- [ ] Implement reverse pyramiding (decreasing position size for add-ons).
-- [ ] Update stop loss logic: place initial stop below/above reversal bar, use trailing stops for add-ons.
-- [ ] Refine exit logic: exit on opposite reversal bar, AO cross, or opposite fractal.
-- [ ] Update tests to cover all new logic and edge cases.
-- [ ] Update documentation to reflect new, fully Bill Williams-compliant entry/exit logic.
++ ✅ Implement explicit Three Wise Men staged entry logic:
+    - ✅ First Wise Man: Detect reversal bar outside Alligator’s mouth, confirmed by AO color.
+    - ✅ Second Wise Man: Detect AO saucer pattern for add-on entry.
+    - ✅ Third Wise Man: Detect fractal breakout for further add-on.
+ ✅ Add Alligator “awake/sleeping” state detection and filter trades accordingly.
+ ✅ Implement reverse pyramiding (decreasing position size for add-ons).
+ ✅ Update stop loss logic: place initial stop below/above reversal bar, use trailing stops for add-ons.
+ ✅ Refine exit logic: exit on opposite reversal bar, AO cross, or opposite fractal.
+ ✅ Update tests to cover all new logic and edge cases.
+ ✅ Update documentation to reflect new, fully Bill Williams-compliant entry/exit logic.
 
 **Deliverables:** Updated `agents/decision_maker_agent.py`, new/updated tests, documentation
 **Acceptance Criteria:** Full compliance with Bill Williams Trading Chaos entry/exit methodology
@@ -284,3 +284,64 @@ This MVP is designed to support future enhancements:
 
 ---
 *This Implementation Plan follows APM framework standards and has been updated based on user feedback to focus on enhanced visualization integration and streamlined agent architecture.*
+
+
+# Validation Plan: Three Wise Men Strategies
+
+## Objective
+Comprehensively validate the correct implementation and integration of all Three Wise Men entry strategies (First, Second, and Third Wise Man) in the AI Multi-Agent Trading Bot, ensuring full compliance with Bill Williams Trading Chaos methodology.
+
+## Scope
+- Validate detection logic for each Wise Man signal.
+- Confirm correct staged entry execution and position sizing.
+- Ensure integration with Alligator state, AO, and fractal logic.
+- Verify logging, test coverage, and documentation.
+
+## Validation Tasks
+
+### 1. Unit Testing
+- Review and expand unit tests for:
+  - First Wise Man: Reversal bar outside Alligator’s mouth, confirmed by AO color.
+  - Second Wise Man: AO saucer pattern detection.
+  - Third Wise Man: Fractal breakout detection.
+- Ensure edge cases are covered (ambiguous bars, overlapping signals, market noise).
+
+### 2. Integration Testing
+- Simulate historical market scenarios with known Three Wise Men signals.
+- Validate that:
+  - The bot enters positions in correct sequence (initial, add-on, further add-on).
+  - Position sizing follows reverse pyramiding logic.
+  - Stop loss and exit logic are triggered as per strategy.
+- Confirm that Alligator “awake/sleeping” state correctly enables/disables entries.
+
+### 3. Backtesting
+- Run backtests on multiple symbols and timeframes.
+- Analyze:
+  - Entry/exit points for each Wise Man event.
+  - Trade logs for correct staged entries and exits.
+  - Performance metrics (win rate, drawdown, profit factor) for each strategy.
+
+### 4. Visualization Review
+- Inspect generated charts to ensure:
+  - All Three Wise Men entries are clearly annotated.
+  - Agent reasoning and confidence levels are displayed.
+  - Alligator, AO, and fractal overlays are accurate.
+
+### 5. Logging & Documentation
+- Review decision logs for:
+  - Correct reasoning chains for each entry.
+  - Accurate timestamps and sequence of staged entries.
+- Ensure documentation describes:
+  - How each Wise Man strategy is detected and executed.
+  - How to interpret logs and visualizations.
+
+### 6. User Acceptance Testing
+- Provide usage scenarios and walkthroughs for end users.
+- Collect feedback on clarity, usability, and correctness of Three Wise Men logic.
+
+## Success Criteria
+- All unit and integration tests pass for each Wise Man strategy.
+- Backtest results match expected behavior and performance.
+- Visualizations and logs are clear and accurate.
+- Documentation is complete and user-friendly.
+- No critical bugs or compliance gaps remain.

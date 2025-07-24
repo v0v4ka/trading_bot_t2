@@ -194,10 +194,20 @@ class BacktestEngine:
             # Use a subset of data up to current timestamp for signal generation
             subset_df = df.iloc[: index + 1].copy()
 
+            # Debug: log the shape and last row of the subset
+            logger.debug(f"[Signal Debug] Subset df shape: {subset_df.shape}, last row: {subset_df.iloc[-1].to_dict() if not subset_df.empty else 'EMPTY'}")
+
             # Get signals from Signal Detection Agent (returns List[Dict])
-            raw_signals = (
-                self.signal_agent.detect_signals() if self.signal_agent else []
-            )
+            if self.signal_agent:
+                try:
+                    # Try passing subset_df if agent supports it
+                    raw_signals = self.signal_agent.detect_signals(subset_df)
+                except TypeError:
+                    # Fallback: call with no arguments
+                    raw_signals = self.signal_agent.detect_signals()
+            else:
+                raw_signals = []
+            logger.debug(f"[Signal Debug] Raw signals returned: {raw_signals}")
 
             # Convert dict signals to Signal objects
             signals = []
@@ -211,20 +221,29 @@ class BacktestEngine:
                     )
                     signals.append(signal)
                 except Exception as e:
-                    logger.warning(f"Failed to convert signal dict to Signal: {e}")
+                    logger.warning(f"Failed to convert signal dict to Signal: {e}. Signal dict: {signal_dict}")
                     continue
+
+            logger.debug(f"[Signal Debug] Signals after mapping: {[str(s) for s in signals]}")
 
             # Filter signals by confidence if threshold is provided
             if hasattr(self.config, "signal_confidence_threshold"):
+                before_filter = len(signals)
                 signals = [
                     s
                     for s in signals
                     if s.confidence >= self.config.signal_confidence_threshold
                 ]
+                logger.debug(f"[Signal Debug] Signals after confidence filter (threshold={self.config.signal_confidence_threshold}): {len(signals)} (before: {before_filter})")
 
             # For simplicity in MVP, we'll take the most recent signals
             # In a real implementation, you'd match exact timestamps
             recent_signals = signals[-3:] if signals else []  # Last 3 signals
+
+            if not recent_signals:
+                logger.warning(f"[Signal Debug] No signals detected at index {index} (timestamp: {subset_df.index[-1] if not subset_df.empty else 'EMPTY'})")
+            else:
+                logger.debug(f"[Signal Debug] Recent signals returned: {[str(s) for s in recent_signals]}")
 
             return recent_signals
 
